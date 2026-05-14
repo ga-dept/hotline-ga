@@ -201,10 +201,10 @@ button{font-family:inherit;cursor:pointer}
 .brand-name strong{font-size:16px}
 .brand-name span{font-size:11px;color:var(--text-mut);font-weight:500;letter-spacing:.3px}
 .nav-links{display:flex;gap:6px;align-items:center}
-.nav-links a{
+.nav-links a:not(.btn){
   padding:8px 14px;border-radius:8px;color:var(--text-2);font-weight:600;font-size:13.5px;
 }
-.nav-links a:hover{background:var(--mrt-blue-soft);color:var(--mrt-blue);text-decoration:none}
+.nav-links a:not(.btn):hover{background:var(--mrt-blue-soft);color:var(--mrt-blue);text-decoration:none}
 /* Admin login button override — green default, white on hover */
 .nav-links a.btn-nav-admin{
   background:var(--mrt-green);
@@ -452,6 +452,9 @@ table.t{
 .t tbody tr:last-child td{border-bottom:none}
 .t tbody tr:hover{background:var(--surface-2)}
 .t .actions{display:flex;gap:6px;flex-wrap:wrap}
+.t .actions-compact{display:flex;gap:3px;flex-wrap:nowrap;justify-content:flex-end}
+.t .actions-compact .btn-icon{padding:5px;border-radius:7px}
+.t .actions-compact .btn-icon .material-symbols-rounded{font-size:18px}
 .t .mono{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px}
 
 .empty-row{text-align:center;color:var(--text-mut);padding:32px!important}
@@ -774,15 +777,14 @@ table.t{
     <div class="public-nav-inner">
       <div class="brand">
         <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
-        <div class="brand-name"><strong>GA Hotline Portal</strong><span>General Affairs · MRT Jakarta</span></div>
+        <div class="brand-name"><strong>Portal CRM GA</strong><span>General Affairs · MRT Jakarta</span></div>
       </div>
       <div class="nav-links" id="landing-nav-links">
         <a href="#dashboard">Dashboard</a>
         <a href="#tracker">Cek Permintaan</a>
         <a href="#howto">Cara Pakai</a>
         <a href="#form">Buat Permintaan</a>
-        <a href="#/version" class="btn btn-ghost btn-sm" style="margin-left:6px"><span class="material-symbols-rounded" style="font-size:18px">history</span>Riwayat</a>
-        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Admin</a></span>
+        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Masuk</a></span>
       </div>
     </div>
   </nav>
@@ -790,12 +792,7 @@ table.t{
   <section class="hero">
     <div class="hero-shape"></div>
     <div class="hero-inner">
-      <div class="hero-eyebrow">
-        <span class="material-symbols-rounded" style="font-size:16px">verified</span>
-        Layanan resmi General Affairs
-      </div>
-      <h1>Satu pintu untuk seluruh<br>permintaan operasional <span class="accent">General Affairs</span></h1>
-      <p>Rangkum permintaan dari WhatsApp dan SmartOffice dalam satu portal — ajukan, pantau, dan nilai pelayanan dengan mudah.</p>
+      <h1>CRM Dashboard<br>General Affairs Department <br><span class="accent">PT MRT Jakarta (Perseroda)</span></h1>
       <div class="hero-actions">
         <a href="#form" class="btn btn-primary"><span class="material-symbols-rounded">add_circle</span>Buat Permintaan</a>
         <a href="#tracker" class="btn btn-accent"><span class="material-symbols-rounded">search</span>Cek Status</a>
@@ -944,9 +941,7 @@ table.t{
   <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
     <div class="section-inner">
       <div class="section-head center">
-        <div class="kicker">Mudah & Cepat</div>
-        <h2>Cara Pakai Portal</h2>
-        <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
+        <h2>Petunjuk Penggunaan</h2>
       </div>
       <div class="steps">
         <div class="step"><div class="step-num">1</div>
@@ -968,7 +963,7 @@ table.t{
   <footer class="public-footer">
     <div class="public-footer-inner">
       <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
-      <div><a href="#/version">Riwayat Versi</a> · <a href="#/login">Login Admin</a></div>
+      <div><a href="#/version">Riwayat Versi</a></div>
     </div>
   </footer>
 </template>
@@ -982,17 +977,13 @@ table.t{
           <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
-        <h2>Selamat datang kembali.<br>Kelola permintaan dengan tenang.</h2>
-        <p>Dasbor admin untuk memonitor, memproses, dan menilai kinerja layanan General Affairs MRT Jakarta dari satu tempat.</p>
-      </div>
-      <div class="quote">
-        "Layanan internal yang baik dimulai dari sistem yang rapi. Portal ini dibuat untuk membantu tim GA bekerja lebih cepat dan transparan."
+        <h2>Selamat datang kembali!</h2>
       </div>
     </div>
     <div class="login-right">
       <div class="login-box">
-        <h3>Masuk ke Admin</h3>
-        <p class="sub">Gunakan akun admin GA Anda</p>
+        <h3>Masuk untuk Melanjutkan</h3>
+        <p class="sub">Gunakan akun Anda</p>
         <form id="login-form">
           <div class="field"><label>Username</label><input type="text" class="input" name="username" required autocomplete="username" /></div>
           <div class="field"><label>Password</label><input type="password" class="input" name="password" required autocomplete="current-password" /></div>
@@ -2320,8 +2311,8 @@ function renderRequestsTable(host, data, opts){
               <td style="max-width:240px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.detail_kebutuhan||'')}">${escapeHtml(r.detail_kebutuhan||'')}</div></td>
               <td class="mono">${fmtRupiah(r.estimasi_harga)}</td>
               <td><span class="badge ${STATUS_CLASS[r.status]||''}">${escapeHtml(r.status)}</span></td>
-              <td>
-                <div class="actions" style="justify-content:flex-end">
+              <td style="white-space:nowrap">
+                <div class="actions-compact">
                   <button class="btn-icon" data-act="view" data-id="${r.id}" title="Detail"><span class="material-symbols-rounded">visibility</span></button>
                   ${!compact?`
                     <button class="btn-icon" data-act="edit" data-id="${r.id}" title="Edit / Update Status"><span class="material-symbols-rounded">edit</span></button>
@@ -2969,7 +2960,7 @@ async function viewAdminMyTicket(c){
       </div>
       ${isLead?`
         <div>
-          <select class="select" id="mt-view-mode" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">
+          <select class="select" id="mt-view-mode" style="background:#fff;color:var(--text);border:1px solid rgba(255,255,255,.4);font-weight:600;min-width:170px">
             <option value="me">Tiket Saya</option>
             <option value="team">Tampilan Tim</option>
           </select>
@@ -3046,8 +3037,8 @@ async function viewAdminMyTicket(c){
                     ${showPicHeader?`<td><span class="badge ${STATUS_CLASS[r.status]||''}">${escapeHtml(r.status)}</span></td>`:''}
                     <td>${fmtDate(r.tanggal_kebutuhan)}</td>
                     <td style="max-width:260px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.detail_kebutuhan||'')}">${escapeHtml(r.detail_kebutuhan||'')}</div></td>
-                    <td style="text-align:right">
-                      <div class="actions" style="justify-content:flex-end">
+                    <td style="text-align:right;white-space:nowrap">
+                      <div class="actions-compact">
                         <button class="btn-icon" data-id="${r.id}" data-mt-act="view" title="Detail"><span class="material-symbols-rounded">visibility</span></button>
                         <button class="btn-icon" data-id="${r.id}" data-mt-act="edit" title="Update"><span class="material-symbols-rounded">edit</span></button>
                       </div>
