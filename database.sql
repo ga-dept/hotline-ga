@@ -12,6 +12,7 @@ create extension if not exists "pgcrypto";   -- gen_random_uuid(), crypt()
 
 -- ---------- DROP (idempotent re-runs) --------------------------------
 drop view  if exists v_request_summary cascade;
+drop table if exists notifications     cascade;
 drop table if exists ratings           cascade;
 drop table if exists requests          cascade;
 drop table if exists app_users         cascade;
@@ -43,6 +44,8 @@ create table app_users (
   password_hash text not null,
   full_name     text not null,
   role          text not null check (role in ('superadmin','admin','pic')) default 'admin',
+  jabatan       text,
+  lokasi_kerja  text,
   active        boolean default true,
   created_at    timestamptz default now(),
   updated_at    timestamptz default now()
@@ -93,6 +96,7 @@ create table requests (
   total_anggaran         bigint default 0,
   nama_vendor            text,
   nama_pic_ga            text,
+  pic_user_id            uuid references app_users(id) on delete set null,
   estimasi_penyelesaian  date,
 
   created_at             timestamptz default now(),
@@ -103,6 +107,7 @@ create index idx_requests_kategori  on requests(kategori);
 create index idx_requests_status    on requests(status);
 create index idx_requests_created   on requests(created_at desc);
 create index idx_requests_kode      on requests(kode_permintaan);
+create index idx_requests_pic       on requests(pic_user_id);
 
 -- Ratings table (1 rating per request)
 create table ratings (
@@ -115,6 +120,20 @@ create table ratings (
 );
 
 create index idx_ratings_request on ratings(request_id);
+
+-- Notifications table — populated by trigger when a PIC is assigned/changed
+create table notifications (
+  id          uuid primary key default gen_random_uuid(),
+  user_id     uuid not null references app_users(id) on delete cascade,
+  request_id  uuid references requests(id) on delete cascade,
+  type        text not null,        -- 'assigned' | 'status_change' | 'general'
+  title       text not null,
+  body        text,
+  read_at     timestamptz,          -- null = unread
+  created_at  timestamptz default now()
+);
+create index idx_notif_user    on notifications(user_id, read_at);
+create index idx_notif_created on notifications(created_at desc);
 
 -- Version history
 create table version_history (
@@ -159,6 +178,37 @@ begin
 end;
 $$ language plpgsql;
 
+-- Notification trigger: when a PIC user is assigned (or changed) to a
+-- request, drop a notification into the inbox for that user.
+create or replace function fn_notify_pic_assign() returns trigger as $$
+declare
+  v_changed boolean := false;
+begin
+  if tg_op = 'INSERT' and new.pic_user_id is not null then
+    v_changed := true;
+  elsif tg_op = 'UPDATE' and new.pic_user_id is not null
+        and (old.pic_user_id is distinct from new.pic_user_id) then
+    v_changed := true;
+  end if;
+
+  if v_changed then
+    insert into notifications (user_id, request_id, type, title, body)
+    values (
+      new.pic_user_id, new.id, 'assigned',
+      'Anda ditugaskan sebagai PIC',
+      'Permintaan ' || new.kode_permintaan || ' (' || new.kategori || ') dari '
+        || new.nama_pemesan || ' baru saja ditugaskan kepada Anda.'
+    );
+  end if;
+  return new;
+end;
+$$ language plpgsql;
+
+drop trigger if exists trg_notify_pic on requests;
+create trigger trg_notify_pic
+  after insert or update of pic_user_id on requests
+  for each row execute function fn_notify_pic_assign();
+
 -- Public-safe view used by landing-page tracker (hides sensitive admin fields
 -- that some teams may consider internal; keep what user needs to see).
 create or replace view v_request_summary as
@@ -187,6 +237,7 @@ from requests;
 -- ---------------------------------------------------------------------
 alter table requests        enable row level security;
 alter table ratings         enable row level security;
+alter table notifications   enable row level security;
 alter table app_users       enable row level security;
 alter table lokasi_options  enable row level security;
 alter table tujuan_options  enable row level security;
@@ -196,6 +247,7 @@ alter table counters        enable row level security;
 -- Permissive policies for the anon role (demo / internal portal scope).
 create policy p_requests_all        on requests        for all using (true) with check (true);
 create policy p_ratings_all         on ratings         for all using (true) with check (true);
+create policy p_notifications_all   on notifications   for all using (true) with check (true);
 create policy p_app_users_all       on app_users       for all using (true) with check (true);
 create policy p_lokasi_all          on lokasi_options  for all using (true) with check (true);
 create policy p_tujuan_all          on tujuan_options  for all using (true) with check (true);
@@ -204,8 +256,9 @@ create policy p_counters_all        on counters        for all using (true) with
 
 -- Login helper: returns user row if credentials match (bcrypt compare).
 create or replace function fn_login(p_user text, p_pass text)
-returns table(id uuid, username text, full_name text, role text) as $$
-  select id, username, full_name, role
+returns table(id uuid, username text, full_name text, role text,
+              jabatan text, lokasi_kerja text) as $$
+  select id, username, full_name, role, jabatan, lokasi_kerja
     from app_users
    where username = p_user
      and active = true
@@ -215,12 +268,14 @@ $$ language sql security definer;
 
 -- Create user with bcrypt-hashed password.
 create or replace function fn_create_user(
-  p_username text, p_password text, p_full_name text, p_role text)
+  p_username text, p_password text, p_full_name text, p_role text,
+  p_jabatan text default null, p_lokasi_kerja text default null)
 returns app_users as $$
 declare v_row app_users;
 begin
-  insert into app_users(username, password_hash, full_name, role)
-       values (p_username, crypt(p_password, gen_salt('bf')), p_full_name, p_role)
+  insert into app_users(username, password_hash, full_name, role, jabatan, lokasi_kerja)
+       values (p_username, crypt(p_password, gen_salt('bf')), p_full_name, p_role,
+               p_jabatan, p_lokasi_kerja)
     returning * into v_row;
   return v_row;
 end;
@@ -237,19 +292,25 @@ $$ language sql security definer;
 
 -- Allow anon role to call these helpers
 grant execute on function fn_login(text, text)            to anon, authenticated;
-grant execute on function fn_create_user(text, text, text, text) to anon, authenticated;
+grant execute on function fn_create_user(text, text, text, text, text, text) to anon, authenticated;
 grant execute on function fn_set_password(uuid, text)     to anon, authenticated;
 grant execute on function fn_generate_request_code(text)  to anon, authenticated;
 
 -- ---------- SEED DATA ------------------------------------------------
 
--- Default admin user (username: admin / password: admin123)
--- Password is stored as bcrypt hash via pgcrypto.
-insert into app_users (username, password_hash, full_name, role)
+-- Default users (passwords stored as bcrypt hash via pgcrypto)
+insert into app_users (username, password_hash, full_name, role, jabatan, lokasi_kerja)
 values
-  ('admin',     crypt('admin123', gen_salt('bf')), 'Super Admin',     'superadmin'),
-  ('ga.budi',   crypt('budi123',  gen_salt('bf')), 'Budi Santoso',    'admin'),
-  ('ga.siti',   crypt('siti123',  gen_salt('bf')), 'Siti Nurhaliza',  'pic');
+  ('admin',     crypt('admin123', gen_salt('bf')), 'Super Admin',     'superadmin',
+     'Head of General Affairs', 'Kantor Pusat'),
+  ('ga.budi',   crypt('budi123',  gen_salt('bf')), 'Budi Santoso',    'admin',
+     'GA Coordinator',          'Kantor Pusat'),
+  ('ga.siti',   crypt('siti123',  gen_salt('bf')), 'Siti Nurhaliza',  'pic',
+     'GA Officer',              'Depo Lebak Bulus'),
+  ('ga.rian',   crypt('rian123',  gen_salt('bf')), 'Rian Pratama',    'pic',
+     'GA Officer',              'Depo Velodrome'),
+  ('ga.dewi',   crypt('dewi123',  gen_salt('bf')), 'Dewi Anggraini',  'pic',
+     'GA Officer',              'Stasiun Bundaran HI');
 
 -- Locations
 insert into lokasi_options (name) values
@@ -278,46 +339,52 @@ insert into tujuan_options (name) values
 insert into version_history (version, release_date, changes) values
   ('1.0.0', '2026-05-01', 'Rilis pertama portal GA Hotline: input permintaan, tracking publik, dashboard admin.'),
   ('1.1.0', '2026-05-08', 'Tambah fitur penilaian kepuasan via tautan & halaman Daftar Penilaian.'),
-  ('1.2.0', '2026-05-12', 'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.');
+  ('1.2.0', '2026-05-12', 'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.'),
+  ('1.3.0', '2026-05-14', 'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.');
 
 -- Sample requests (so the dashboard is not empty on first run)
 do $$
 declare
   v_code text;
+  v_pic_budi uuid := (select id from app_users where username='ga.budi');
+  v_pic_siti uuid := (select id from app_users where username='ga.siti');
+  v_pic_rian uuid := (select id from app_users where username='ga.rian');
 begin
   v_code := fn_generate_request_code('FB');
   insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
                         nama_pemesan, nama_kegiatan, lokasi_kebutuhan, tujuan_kebutuhan,
                         tanggal_kebutuhan, detail_kebutuhan, estimasi_harga,
-                        kode_smartoffice, status)
+                        kode_smartoffice, status, pic_user_id, nama_pic_ga)
   values (v_code, 'Food and Beverage', 'FB', 'WhatsApp',
           'Rina Wulandari', 'Rapat Bulanan Divisi Operasional',
           'Lantai 5 - Meeting Room A', 'Rapat Internal',
           current_date + 2, 'Snack box untuk 20 orang + air mineral', 1500000,
-          'SO-FB-2026-0091', 'Mencari Penyedia');
+          'SO-FB-2026-0091', 'Mencari Penyedia',
+          v_pic_siti, 'Siti Nurhaliza');
 
   v_code := fn_generate_request_code('OS');
   insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
                         nama_pemesan, nama_kegiatan, lokasi_kebutuhan, tujuan_kebutuhan,
                         tanggal_kebutuhan, detail_kebutuhan, estimasi_harga,
-                        kode_smartoffice, status)
+                        kode_smartoffice, status, pic_user_id, nama_pic_ga)
   values (v_code, 'Office Supply', 'OS', 'SmartOffice',
           'Andi Pratama', 'Restock ATK Lantai 10',
           'Lantai 10 - Open Space', 'Operasional Harian',
           current_date + 5, 'Kertas A4 5 rim, pulpen 2 box, sticky notes 10 pack', 750000,
-          'SO-OS-2026-0118', 'Sedang Disiapkan');
+          'SO-OS-2026-0118', 'Sedang Disiapkan',
+          v_pic_budi, 'Budi Santoso');
 
   v_code := fn_generate_request_code('UFM');
   insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
                         nama_pemesan, nama_kegiatan, lokasi_kebutuhan, tujuan_kebutuhan,
                         tanggal_kebutuhan, detail_kebutuhan, estimasi_harga, status,
-                        total_anggaran, nama_vendor, nama_pic_ga, estimasi_penyelesaian,
-                        keterangan)
+                        total_anggaran, nama_vendor, nama_pic_ga, pic_user_id,
+                        estimasi_penyelesaian, keterangan)
   values (v_code, 'Seragam', 'UFM', 'WhatsApp',
           'Dewi Lestari', 'Pengadaan Seragam Karyawan Baru Batch Mei',
           'Lantai 7 - Ruang Direksi', 'Kebutuhan Karyawan Baru',
           current_date + 14, 'Seragam kerja size S/M/L untuk 12 karyawan baru', 8400000,
-          'Selesai', 8200000, 'PT Garmen Sejahtera', 'Budi Santoso',
+          'Selesai', 8200000, 'PT Garmen Sejahtera', 'Budi Santoso', v_pic_budi,
           current_date - 1, 'Seragam sudah diterima lengkap di Lt.7.');
 
   v_code := fn_generate_request_code('EV');
@@ -335,11 +402,12 @@ begin
   insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,
                         nama_pemesan, lokasi_kebutuhan, tujuan_kebutuhan,
                         tanggal_kebutuhan, detail_kebutuhan, estimasi_harga,
-                        kode_smartoffice, status)
+                        kode_smartoffice, status, pic_user_id, nama_pic_ga)
   values (v_code, 'Direct Purchase', 'DP', 'WhatsApp',
           'Maya Sari', 'Lantai 12 - Pantry', 'Operasional Harian',
           current_date + 1, 'Pembelian galon air + dispenser pantry', 1200000,
-          'SO-DP-2026-0307', 'Tersedia');
+          'SO-DP-2026-0307', 'Tersedia',
+          v_pic_rian, 'Rian Pratama');
 
   v_code := fn_generate_request_code('FAC');
   insert into requests (kode_permintaan, kategori, kategori_kode, sumber_pemesanan,

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Portal CRM — General Affairs</title>
+<title>GA Hotline Portal — General Affairs MRT</title>
 <link rel="icon" type="image/png" href="logo.png" />
 <link rel="apple-touch-icon" href="logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -565,10 +565,136 @@ table.t{
 }
 .success-mark .material-symbols-rounded{font-size:42px;font-variation-settings:'wght' 600}
 @keyframes popIn{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
 
 .kvlist{display:grid;grid-template-columns:160px 1fr;gap:8px 16px;font-size:13.5px}
 .kvlist .k{color:var(--text-mut);font-weight:500}
 .kvlist .v{color:var(--text);font-weight:600;word-break:break-word}
+
+/* ---- Notification bell ---- */
+.bell-wrap{position:relative;display:inline-block}
+.bell-btn{
+  background:transparent;border:1px solid var(--border);
+  border-radius:10px;padding:8px;color:var(--text-2);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;position:relative;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.bell-btn:hover{background:var(--mrt-blue-soft);color:var(--mrt-blue);border-color:var(--mrt-blue-3)}
+.bell-btn .badge-dot{
+  position:absolute;top:3px;right:3px;
+  min-width:18px;height:18px;border-radius:9px;padding:0 5px;
+  background:#DC2626;color:#fff;font-size:10.5px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 0 2px #fff;
+  animation:bellPulse 1.8s ease-in-out infinite;
+}
+@keyframes bellPulse{
+  0%,100%{transform:scale(1);box-shadow:0 0 0 2px #fff, 0 0 0 0 rgba(220,38,38,.5)}
+  50%{transform:scale(1.05);box-shadow:0 0 0 2px #fff, 0 0 0 6px rgba(220,38,38,0)}
+}
+.bell-panel{
+  position:absolute;right:0;top:calc(100% + 8px);
+  width:360px;max-width:calc(100vw - 32px);
+  background:#fff;border:1px solid var(--border-2);border-radius:14px;
+  box-shadow:var(--shadow-lg);z-index:200;
+  display:none;overflow:hidden;
+  animation:fadeIn .15s ease;
+}
+.bell-panel.show{display:block}
+.bell-head{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:14px 16px;border-bottom:1px solid var(--border-2);
+}
+.bell-head h4{margin:0;font-size:14.5px;font-weight:700}
+.bell-list{max-height:380px;overflow-y:auto}
+.bell-item{
+  display:flex;gap:10px;padding:12px 16px;border-bottom:1px solid var(--border-2);
+  transition:background .12s;
+}
+.bell-item:last-child{border-bottom:none}
+.bell-item:hover{background:var(--surface-2)}
+.bell-item.unread{background:linear-gradient(90deg,var(--mrt-blue-soft) 0%,transparent 50%)}
+.bell-icon{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--mrt-blue-soft);color:var(--mrt-blue);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.bell-content{flex:1;min-width:0}
+.bell-content .title{font-size:13px;font-weight:700;color:var(--text);margin:0 0 2px}
+.bell-content .body{font-size:12.5px;color:var(--text-2);line-height:1.45;margin:0}
+.bell-content .when{font-size:11px;color:var(--text-soft);margin-top:4px}
+.bell-empty{padding:32px 20px;text-align:center;color:var(--text-mut);font-size:13px}
+.bell-foot{padding:10px 16px;border-top:1px solid var(--border-2);background:var(--surface-2);text-align:center}
+
+/* Landing logged-in chip */
+.landing-user-chip{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:6px 12px;border-radius:999px;
+  background:var(--mrt-blue-soft);color:var(--mrt-blue);
+  font-size:13px;font-weight:600;
+}
+.landing-user-chip .av{
+  width:24px;height:24px;border-radius:50%;
+  background:linear-gradient(135deg,var(--mrt-blue),var(--mrt-green));
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;
+}
+
+/* ---- Mass upload stepper ---- */
+.stepper{display:flex;gap:6px;margin-bottom:18px}
+.stepper .stp{
+  flex:1;padding:10px 12px;border-radius:10px;
+  background:var(--surface-2);color:var(--text-mut);font-size:12.5px;font-weight:600;
+  display:flex;align-items:center;gap:8px;border:1px solid var(--border-2);
+}
+.stepper .stp.done{background:var(--mrt-green-soft);color:var(--mrt-green);border-color:var(--mrt-green-soft)}
+.stepper .stp.active{background:var(--mrt-blue);color:#fff;border-color:var(--mrt-blue)}
+.stepper .stp .num{
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(0,0,0,.07);color:inherit;
+  display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+}
+.stepper .stp.active .num{background:rgba(255,255,255,.25)}
+
+.drop-zone{
+  border:2px dashed var(--border);border-radius:14px;
+  padding:36px 20px;text-align:center;background:var(--surface-2);
+  cursor:pointer;transition:border-color .15s,background .15s;
+}
+.drop-zone:hover,.drop-zone.drag{border-color:var(--mrt-blue-3);background:var(--mrt-blue-soft)}
+.drop-zone .material-symbols-rounded{font-size:42px;color:var(--mrt-blue);margin-bottom:6px;display:block}
+
+.preview-row{font-size:12.5px}
+.preview-row.invalid{background:#FEF2F2}
+.preview-row .err{color:var(--danger);font-size:11.5px;display:block}
+
+/* ---- Tiket Saya page ---- */
+.profile-card{
+  background:linear-gradient(135deg,var(--mrt-blue) 0%,var(--mrt-blue-2) 60%,var(--mrt-green) 130%);
+  color:#fff;border-radius:var(--radius);padding:22px 24px;margin-bottom:22px;
+  display:flex;align-items:center;gap:18px;box-shadow:var(--shadow);
+}
+.profile-card .av-lg{
+  width:60px;height:60px;border-radius:50%;
+  background:rgba(255,255,255,.2);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:800;flex-shrink:0;
+  border:2px solid rgba(255,255,255,.3);
+}
+.profile-card h3{margin:0;font-size:18px;font-weight:800}
+.profile-card .meta{font-size:13px;color:#D4DEF0;display:flex;flex-wrap:wrap;gap:14px;margin-top:4px}
+.profile-card .meta span{display:inline-flex;align-items:center;gap:4px}
+
+.bucket-card{margin-bottom:18px}
+.bucket-head{
+  padding:14px 18px;border-bottom:1px solid var(--border-2);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.bucket-head h3{margin:0;font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:8px}
+.bucket-count{
+  background:var(--mrt-blue);color:#fff;border-radius:999px;
+  padding:2px 9px;font-size:11.5px;font-weight:700;min-width:24px;text-align:center;
+}
 
 /* version timeline */
 .timeline{position:relative;padding-left:24px}
@@ -628,6 +754,8 @@ table.t{
   .kvlist .k{margin-top:6px}
   .hero h1{font-size:26px}
   .hero p{font-size:14.5px}
+  .bell-panel{width:calc(100vw - 24px);right:-8px}
+  .profile-card{flex-direction:column;align-items:flex-start;text-align:left}
 }
 </style>
 </head>
@@ -646,14 +774,15 @@ table.t{
     <div class="public-nav-inner">
       <div class="brand">
         <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
-        <div class="brand-name"><strong>Portal CRM</strong><span>General Affairs · MRT Jakarta</span></div>
+        <div class="brand-name"><strong>GA Hotline Portal</strong><span>General Affairs · MRT Jakarta</span></div>
       </div>
-      <div class="nav-links">
+      <div class="nav-links" id="landing-nav-links">
         <a href="#dashboard">Dashboard</a>
         <a href="#tracker">Cek Permintaan</a>
         <a href="#howto">Cara Pakai</a>
         <a href="#form">Buat Permintaan</a>
-        <a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Admin</a>
+        <a href="#/version" class="btn btn-ghost btn-sm" style="margin-left:6px"><span class="material-symbols-rounded" style="font-size:18px">history</span>Riwayat</a>
+        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Admin</a></span>
       </div>
     </div>
   </nav>
@@ -661,6 +790,10 @@ table.t{
   <section class="hero">
     <div class="hero-shape"></div>
     <div class="hero-inner">
+      <div class="hero-eyebrow">
+        <span class="material-symbols-rounded" style="font-size:16px">verified</span>
+        Layanan resmi General Affairs
+      </div>
       <h1>Satu pintu untuk seluruh<br>permintaan operasional <span class="accent">General Affairs</span></h1>
       <p>Rangkum permintaan dari WhatsApp dan SmartOffice dalam satu portal — ajukan, pantau, dan nilai pelayanan dengan mudah.</p>
       <div class="hero-actions">
@@ -884,6 +1017,7 @@ table.t{
       </div>
       <nav class="sidebar-nav" id="admin-nav">
         <a class="nav-item" data-route="dashboard"><span class="material-symbols-rounded">dashboard</span><span class="nav-label">Dashboard</span></a>
+        <a class="nav-item" data-route="myticket"><span class="material-symbols-rounded">assignment_ind</span><span class="nav-label">Tiket Saya</span></a>
         <a class="nav-item" data-route="requests"><span class="material-symbols-rounded">list_alt</span><span class="nav-label">Daftar Permintaan</span></a>
         <a class="nav-item" data-route="ratings"><span class="material-symbols-rounded">star</span><span class="nav-label">Daftar Penilaian</span></a>
         <a class="nav-item" data-route="masterdata"><span class="material-symbols-rounded">tune</span><span class="nav-label">Master Data</span></a>
@@ -895,7 +1029,7 @@ table.t{
           <div class="user-avatar" id="user-avatar">A</div>
           <div class="user-meta"><strong id="user-name">Admin</strong><span id="user-role">role</span></div>
         </div>
-        <button class="btn-icon" id="logout-btn" title="Logout"><span class="material-symbols-rounded">logout</span></button>
+        <button class="btn-icon" id="logout-btn-side" title="Logout"><span class="material-symbols-rounded">logout</span></button>
       </div>
     </aside>
     <main class="admin-main">
@@ -909,6 +1043,20 @@ table.t{
         </div>
         <div class="flex items-center gap-2">
           <a href="#/" class="btn btn-ghost btn-sm"><span class="material-symbols-rounded" style="font-size:18px">open_in_new</span>Lihat Portal</a>
+          <div class="bell-wrap" id="bell-wrap">
+            <button class="bell-btn" id="bell-btn" title="Notifikasi">
+              <span class="material-symbols-rounded">notifications</span>
+              <span class="badge-dot" id="bell-badge" style="display:none">0</span>
+            </button>
+            <div class="bell-panel" id="bell-panel">
+              <div class="bell-head">
+                <h4>Notifikasi</h4>
+                <button class="btn btn-ghost btn-sm" id="mark-all-read" style="padding:4px 10px;font-size:12px">Tandai Sudah Dibaca</button>
+              </div>
+              <div class="bell-list" id="bell-list"></div>
+            </div>
+          </div>
+          <button class="btn-icon" id="logout-btn-top" title="Logout"><span class="material-symbols-rounded">logout</span></button>
         </div>
       </header>
       <div class="admin-content" id="admin-content"></div>
@@ -972,8 +1120,8 @@ table.t{
    ============================================================ */
 
 /* ---------- CONFIG (edit these two values) ---------- */
-const SUPABASE_URL = window.__SUPA_URL__ || 'https://ekgebayrtjdjxsegcmru.supabase.co';
-const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ2ViYXlydGpkanhzZWdjbXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzM3OTAsImV4cCI6MjA5NDE0OTc5MH0.JUwWYQiGIY4PkHei0XI1HgdchynMSkQzarpDiH-guyE';
+const SUPABASE_URL = window.__SUPA_URL__ || 'https://YOUR-PROJECT-REF.supabase.co';
+const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'YOUR_ANON_KEY';
 
 /* If the user hasn't configured Supabase yet, run in DEMO mode with
    in-memory data so the UI still works for inspection. */
@@ -1022,21 +1170,23 @@ const demo = (() => {
       lokasi_kebutuhan:'Lantai 5 - Meeting Room A', tujuan_kebutuhan:'Rapat Internal',
       tanggal_kebutuhan:addDays(2), detail_kebutuhan:'Snack box untuk 20 orang + air mineral',
       estimasi_harga:1500000, status:'Mencari Penyedia', keterangan:null,
-      total_anggaran:0, nama_vendor:null, nama_pic_ga:null, estimasi_penyelesaian:null,
-      created_at:iso(today) },
+      total_anggaran:0, nama_vendor:null, nama_pic_ga:'Siti Nurhaliza', pic_user_id:'u3',
+      estimasi_penyelesaian:null, created_at:iso(today) },
     { id:'r2', kode_permintaan:nextCode('OS'), kategori:'Office Supply', kategori_kode:'OS',
       kode_smartoffice:'SO-OS-2026-0118', sumber_pemesanan:'SmartOffice',
       nama_pemesan:'Andi Pratama', nama_kegiatan:'Restock ATK Lantai 10',
       lokasi_kebutuhan:'Lantai 10 - Open Space', tujuan_kebutuhan:'Operasional Harian',
       tanggal_kebutuhan:addDays(5), detail_kebutuhan:'Kertas A4 5 rim, pulpen 2 box, sticky notes 10 pack',
-      estimasi_harga:750000, status:'Sedang Disiapkan', created_at:iso(today) },
+      estimasi_harga:750000, status:'Sedang Disiapkan',
+      nama_pic_ga:'Budi Santoso', pic_user_id:'u2',
+      created_at:iso(today) },
     { id:'r3', kode_permintaan:nextCode('UFM'), kategori:'Seragam', kategori_kode:'UFM',
       sumber_pemesanan:'WhatsApp', nama_pemesan:'Dewi Lestari',
       nama_kegiatan:'Pengadaan Seragam Karyawan Baru Batch Mei',
       lokasi_kebutuhan:'Lantai 7 - Ruang Direksi', tujuan_kebutuhan:'Kebutuhan Karyawan Baru',
       tanggal_kebutuhan:addDays(14), detail_kebutuhan:'Seragam kerja size S/M/L untuk 12 karyawan baru',
       estimasi_harga:8400000, status:'Selesai', total_anggaran:8200000,
-      nama_vendor:'PT Garmen Sejahtera', nama_pic_ga:'Budi Santoso',
+      nama_vendor:'PT Garmen Sejahtera', nama_pic_ga:'Budi Santoso', pic_user_id:'u2',
       estimasi_penyelesaian:addDays(-1), keterangan:'Seragam sudah diterima lengkap di Lt.7.',
       created_at:iso(today) },
     { id:'r4', kode_permintaan:nextCode('EV'), kategori:'Event Support', kategori_kode:'EV',
@@ -1049,7 +1199,9 @@ const demo = (() => {
       kode_smartoffice:'SO-DP-2026-0307', sumber_pemesanan:'WhatsApp', nama_pemesan:'Maya Sari',
       lokasi_kebutuhan:'Lantai 12 - Pantry', tujuan_kebutuhan:'Operasional Harian',
       tanggal_kebutuhan:addDays(1), detail_kebutuhan:'Pembelian galon air + dispenser pantry',
-      estimasi_harga:1200000, status:'Tersedia', created_at:iso(today) },
+      estimasi_harga:1200000, status:'Tersedia',
+      nama_pic_ga:'Rian Pratama', pic_user_id:'u4',
+      created_at:iso(today) },
     { id:'r6', kode_permintaan:nextCode('FAC'), kategori:'Fasilitas Kantor dan Identitas Karyawan',
       kategori_kode:'FAC', sumber_pemesanan:'WhatsApp', nama_pemesan:'Reza Firmansyah',
       lokasi_kebutuhan:'Lantai 7 - Ruang Direksi', tujuan_kebutuhan:'Kebutuhan Karyawan Baru',
@@ -1078,17 +1230,26 @@ const demo = (() => {
     {id:'t7',name:'Event Khusus'},{id:'t8',name:'Kebutuhan Karyawan Baru'}
   ];
   const users = [
-    {id:'u1',username:'admin',password:'admin123',full_name:'Super Admin',role:'superadmin',active:true},
-    {id:'u2',username:'ga.budi',password:'budi123',full_name:'Budi Santoso',role:'admin',active:true},
-    {id:'u3',username:'ga.siti',password:'siti123',full_name:'Siti Nurhaliza',role:'pic',active:true}
+    {id:'u1',username:'admin',password:'admin123',full_name:'Super Admin',role:'superadmin',
+       jabatan:'Head of General Affairs',lokasi_kerja:'Kantor Pusat',active:true},
+    {id:'u2',username:'ga.budi',password:'budi123',full_name:'Budi Santoso',role:'admin',
+       jabatan:'GA Coordinator',lokasi_kerja:'Kantor Pusat',active:true},
+    {id:'u3',username:'ga.siti',password:'siti123',full_name:'Siti Nurhaliza',role:'pic',
+       jabatan:'GA Officer',lokasi_kerja:'Depo Lebak Bulus',active:true},
+    {id:'u4',username:'ga.rian',password:'rian123',full_name:'Rian Pratama',role:'pic',
+       jabatan:'GA Officer',lokasi_kerja:'Depo Velodrome',active:true},
+    {id:'u5',username:'ga.dewi',password:'dewi123',full_name:'Dewi Anggraini',role:'pic',
+       jabatan:'GA Officer',lokasi_kerja:'Stasiun Bundaran HI',active:true}
   ];
+  const notifications = [];
   const version = [
     {id:'v1',version:'1.0.0',release_date:'2026-05-01',changes:'Rilis pertama portal GA Hotline: input permintaan, tracking publik, dashboard admin.'},
     {id:'v2',version:'1.1.0',release_date:'2026-05-08',changes:'Tambah fitur penilaian kepuasan via tautan & halaman Daftar Penilaian.'},
-    {id:'v3',version:'1.2.0',release_date:'2026-05-12',changes:'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.'}
+    {id:'v3',version:'1.2.0',release_date:'2026-05-12',changes:'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.'},
+    {id:'v4',version:'1.3.0',release_date:'2026-05-14',changes:'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.'}
   ];
 
-  return { requests, ratings, lokasi, tujuan, users, version, seq, todayKey, nextCode };
+  return { requests, ratings, notifications, lokasi, tujuan, users, version, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -1118,7 +1279,18 @@ const db = {
   async insertRequest(payload){
     if(!SUPA_CONFIGURED){
       const r = { id:'r'+(demo.requests.length+1), created_at:new Date().toISOString(), status:'Belum Dikonfirmasi', ...payload };
-      demo.requests.unshift(r); return r;
+      demo.requests.unshift(r);
+      // mirror SQL trigger: notify PIC on assignment
+      if(r.pic_user_id){
+        demo.notifications.unshift({
+          id:'n'+(demo.notifications.length+1), user_id:r.pic_user_id, request_id:r.id,
+          type:'assigned',
+          title:'Anda ditugaskan sebagai PIC',
+          body:`Permintaan ${r.kode_permintaan} (${r.kategori}) dari ${r.nama_pemesan} baru saja ditugaskan kepada Anda.`,
+          read_at:null, created_at:new Date().toISOString()
+        });
+      }
+      return r;
     }
     const { data, error } = await supa.from('requests').insert(payload).select().single();
     if(error) throw error; return data;
@@ -1126,9 +1298,31 @@ const db = {
   async updateRequest(id, patch){
     if(!SUPA_CONFIGURED){
       const i = demo.requests.findIndex(r=>r.id===id);
-      demo.requests[i] = { ...demo.requests[i], ...patch }; return demo.requests[i];
+      const prev = demo.requests[i];
+      demo.requests[i] = { ...prev, ...patch };
+      // mirror SQL trigger: if pic changed, notify
+      if(patch.pic_user_id && patch.pic_user_id !== prev.pic_user_id){
+        const r = demo.requests[i];
+        demo.notifications.unshift({
+          id:'n'+(demo.notifications.length+1), user_id:r.pic_user_id, request_id:r.id,
+          type:'assigned',
+          title:'Anda ditugaskan sebagai PIC',
+          body:`Permintaan ${r.kode_permintaan} (${r.kategori}) dari ${r.nama_pemesan} baru saja ditugaskan kepada Anda.`,
+          read_at:null, created_at:new Date().toISOString()
+        });
+      }
+      return demo.requests[i];
     }
     const { data, error } = await supa.from('requests').update(patch).eq('id',id).select().single();
+    if(error) throw error; return data;
+  },
+  async bulkInsertRequests(payloads){
+    if(!SUPA_CONFIGURED){
+      const out = [];
+      for(const p of payloads){ out.push(await this.insertRequest(p)); }
+      return out;
+    }
+    const { data, error } = await supa.from('requests').insert(payloads).select();
     if(error) throw error; return data;
   },
   async deleteRequest(id){
@@ -1191,27 +1385,36 @@ const db = {
   async listUsers(){
     if(!SUPA_CONFIGURED) return demo.users.map(u=>({...u,password_hash:'(demo)'}));
     const { data, error } = await supa.from('app_users')
-      .select('id,username,full_name,role,active,created_at').order('username');
+      .select('id,username,full_name,role,jabatan,lokasi_kerja,active,created_at').order('username');
     if(error) throw error; return data || [];
   },
-  async addUser({username,full_name,role,password}){
+  // PIC-capable users (any active staff can be a PIC; superadmin included so head can also be PIC)
+  async listPicUsers(){
+    const all = await this.listUsers();
+    return all.filter(u => u.active !== false);
+  },
+  async addUser({username,full_name,role,password,jabatan,lokasi_kerja}){
     if(!SUPA_CONFIGURED){
       if(demo.users.find(u=>u.username===username)) throw new Error('Username sudah dipakai');
-      const u = { id:'u'+(demo.users.length+1), username, full_name, role, active:true, password };
+      const u = { id:'u'+(demo.users.length+1), username, full_name, role, active:true,
+                  jabatan:jabatan||null, lokasi_kerja:lokasi_kerja||null, password };
       demo.users.push(u); return u;
     }
     // Try the SQL helper that bcrypt-hashes the password server-side.
     try{
       const { data, error } = await supa.rpc('fn_create_user', {
         p_username: username, p_password: password,
-        p_full_name: full_name, p_role: role
+        p_full_name: full_name, p_role: role,
+        p_jabatan: jabatan||null, p_lokasi_kerja: lokasi_kerja||null
       });
       if(!error && data) return Array.isArray(data) ? data[0] : data;
     }catch(_){}
     // Fallback (less secure): plaintext store, used only if fn_create_user
     // hasn't been added to the database yet.
     const ins = await supa.from('app_users').insert({
-      username, full_name, role, password_hash: password
+      username, full_name, role,
+      jabatan: jabatan||null, lokasi_kerja: lokasi_kerja||null,
+      password_hash: password
     }).select().single();
     if(ins.error) throw ins.error; return ins.data;
   },
@@ -1228,6 +1431,42 @@ const db = {
     const { error } = await supa.from('app_users').delete().eq('id',id);
     if(error) throw error;
   },
+
+  // -------- Notifications --------
+  async listNotifications(userId, opts){
+    opts = opts || {};
+    if(!SUPA_CONFIGURED){
+      let arr = demo.notifications.filter(n => n.user_id === userId);
+      if(opts.unreadOnly) arr = arr.filter(n => !n.read_at);
+      return arr.slice(0, opts.limit || 50);
+    }
+    let q = supa.from('notifications').select('*').eq('user_id', userId)
+      .order('created_at',{ascending:false}).limit(opts.limit || 50);
+    if(opts.unreadOnly) q = q.is('read_at', null);
+    const { data, error } = await q;
+    if(error) throw error; return data || [];
+  },
+  async markNotificationRead(notifId){
+    if(!SUPA_CONFIGURED){
+      const n = demo.notifications.find(x=>x.id===notifId);
+      if(n) n.read_at = new Date().toISOString();
+      return;
+    }
+    const { error } = await supa.from('notifications')
+      .update({ read_at: new Date().toISOString() }).eq('id', notifId);
+    if(error) throw error;
+  },
+  async markAllNotificationsRead(userId){
+    if(!SUPA_CONFIGURED){
+      demo.notifications.forEach(n => { if(n.user_id===userId && !n.read_at) n.read_at = new Date().toISOString(); });
+      return;
+    }
+    const { error } = await supa.from('notifications')
+      .update({ read_at: new Date().toISOString() })
+      .eq('user_id', userId).is('read_at', null);
+    if(error) throw error;
+  },
+
   async loginUser(username, password){
     if(!SUPA_CONFIGURED){
       const u = demo.users.find(x=>x.username===username && x.password===password && x.active);
@@ -1370,11 +1609,12 @@ function csvDownload(filename, rows){
   URL.revokeObjectURL(url);
 }
 
-/* Session */
+/* Session — persisted in localStorage so closing/reopening tab,
+   and bouncing between landing and admin, never logs the user out. */
 const session = {
-  get(){ try{ return JSON.parse(sessionStorage.getItem('ga_session')); }catch{ return null; } },
-  set(u){ sessionStorage.setItem('ga_session', JSON.stringify(u)); },
-  clear(){ sessionStorage.removeItem('ga_session'); }
+  get(){ try{ return JSON.parse(localStorage.getItem('ga_session')); }catch{ return null; } },
+  set(u){ localStorage.setItem('ga_session', JSON.stringify(u)); },
+  clear(){ localStorage.removeItem('ga_session'); }
 };
 
 /* ============================================================
@@ -1419,6 +1659,28 @@ window.addEventListener('hashchange', route);
    ============================================================ */
 async function renderLanding(){
   mount('tpl-landing');
+
+  // --- Session-aware nav (Admin button OR user chip + Dashboard + Logout) ---
+  const u = session.get();
+  const slot = $('#landing-auth-slot');
+  if(u && slot){
+    const initial = (u.full_name||'A').slice(0,1).toUpperCase();
+    slot.innerHTML = `
+      <span class="landing-user-chip" title="${escapeHtml(u.full_name)} (${escapeHtml(u.role)})">
+        <span class="av">${escapeHtml(initial)}</span>${escapeHtml(u.full_name.split(' ')[0])}
+      </span>
+      <a href="#/admin/dashboard" class="btn btn-primary btn-sm" style="margin-left:6px">
+        <span class="material-symbols-rounded" style="font-size:18px">dashboard</span>Dashboard
+      </a>
+      <button id="landing-logout" class="btn btn-ghost btn-sm" style="margin-left:6px">
+        <span class="material-symbols-rounded" style="font-size:18px">logout</span>Logout
+      </button>
+    `;
+    $('#landing-logout').addEventListener('click', () => {
+      if(_bellTimer){ clearInterval(_bellTimer); _bellTimer = null; }
+      session.clear(); toast('Berhasil keluar','info'); renderLanding();
+    });
+  }
 
   // --- Stats ---
   try{
@@ -1677,7 +1939,12 @@ async function renderAdmin(page){
   $('#user-role').textContent = u.role;
   $('#user-avatar').textContent = (u.full_name||'A').slice(0,1).toUpperCase();
 
-  $('#logout-btn').onclick = () => { session.clear(); toast('Berhasil keluar','info'); navigate('/'); };
+  const doLogout = () => {
+    if(_bellTimer){ clearInterval(_bellTimer); _bellTimer = null; }
+    session.clear(); toast('Berhasil keluar','info'); navigate('/');
+  };
+  $('#logout-btn-side').onclick = doLogout;
+  $('#logout-btn-top').onclick  = doLogout;
 
   // Sidebar nav
   $$('#admin-nav .nav-item').forEach(it => {
@@ -1707,8 +1974,12 @@ async function renderAdmin(page){
     if(isMobile()){ sidebar.classList.remove('mobile-open'); backdrop.classList.remove('show'); }
   }));
 
+  // --- Notification bell ---
+  setupBell(u);
+
   const titles = {
     dashboard:'Dashboard',
+    myticket:'Tiket Saya',
     requests:'Daftar Permintaan',
     ratings:'Daftar Penilaian',
     masterdata:'Master Data',
@@ -1721,12 +1992,94 @@ async function renderAdmin(page){
   const c = $('#admin-content');
 
   if(page==='dashboard')       await viewAdminDashboard(c);
+  else if(page==='myticket')   await viewAdminMyTicket(c);
   else if(page==='requests')   await viewAdminRequests(c);
   else if(page==='ratings')    await viewAdminRatings(c);
   else if(page==='masterdata') await viewAdminMaster(c);
   else if(page==='users')      await viewAdminUsers(c);
   else if(page==='version')    await viewAdminVersion(c);
   else { navigate('/admin/dashboard'); }
+}
+
+/* ----------- NOTIFICATION BELL ----------- */
+let _bellTimer = null;
+function setupBell(user){
+  const btn = $('#bell-btn');
+  const panel = $('#bell-panel');
+  const list = $('#bell-list');
+  const badge = $('#bell-badge');
+
+  async function refresh(){
+    try{
+      const items = await db.listNotifications(user.id, { limit: 50 });
+      const unread = items.filter(n => !n.read_at).length;
+      badge.style.display = unread > 0 ? 'flex' : 'none';
+      badge.textContent = unread > 9 ? '9+' : String(unread);
+
+      if(!items.length){
+        list.innerHTML = '<div class="bell-empty"><span class="material-symbols-rounded" style="font-size:36px;color:var(--text-soft);display:block;margin-bottom:6px">notifications_off</span>Tidak ada notifikasi</div>';
+        return;
+      }
+      list.innerHTML = items.map(n => {
+        const ago = relTime(n.created_at);
+        const icon = n.type==='assigned' ? 'assignment_ind' : n.type==='status_change' ? 'sync' : 'notifications';
+        return `
+          <div class="bell-item ${!n.read_at?'unread':''}" data-id="${n.id}" data-req="${n.request_id||''}">
+            <div class="bell-icon"><span class="material-symbols-rounded" style="font-size:20px">${icon}</span></div>
+            <div class="bell-content">
+              <p class="title">${escapeHtml(n.title)}</p>
+              <p class="body">${escapeHtml(n.body||'')}</p>
+              <div class="when">${ago}</div>
+            </div>
+          </div>`;
+      }).join('');
+      // Click on item -> open request detail (if any)
+      $$('.bell-item', list).forEach(el => el.addEventListener('click', () => {
+        const reqId = el.dataset.req;
+        if(reqId){
+          panel.classList.remove('show');
+          openRequestDetail(reqId);
+        }
+      }));
+    }catch(err){ console.error('[bell]', err); }
+  }
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    panel.classList.toggle('show');
+    if(panel.classList.contains('show')) refresh();
+  });
+  // Remove any prior document listener (when re-entering admin shell)
+  if(window._bellDocHandler) document.removeEventListener('click', window._bellDocHandler);
+  window._bellDocHandler = (e) => {
+    const wrap = document.getElementById('bell-wrap');
+    if(!wrap) return;            // admin not mounted right now
+    if(!wrap.contains(e.target)) wrap.querySelector('.bell-panel')?.classList.remove('show');
+  };
+  document.addEventListener('click', window._bellDocHandler);
+
+  $('#mark-all-read').addEventListener('click', async (e) => {
+    e.stopPropagation();
+    try{
+      await db.markAllNotificationsRead(user.id);
+      await refresh();
+      toast('Semua notifikasi ditandai sudah dibaca','success', 1500);
+    }catch(err){ toast('Gagal: '+(err.message||''),'error'); }
+  });
+
+  // initial badge + polling
+  refresh();
+  if(_bellTimer) clearInterval(_bellTimer);
+  _bellTimer = setInterval(refresh, 30000);
+}
+
+function relTime(iso){
+  const diff = (Date.now() - new Date(iso).getTime()) / 1000;
+  if(diff < 60)   return 'Baru saja';
+  if(diff < 3600) return Math.floor(diff/60) + ' menit lalu';
+  if(diff < 86400) return Math.floor(diff/3600) + ' jam lalu';
+  if(diff < 604800) return Math.floor(diff/86400) + ' hari lalu';
+  return fmtDate(iso);
 }
 
 /* ----------- ADMIN: DASHBOARD ----------- */
@@ -1797,7 +2150,10 @@ async function viewAdminDashboard(c){
 
 /* ----------- ADMIN: REQUESTS (full CRUD) ----------- */
 let _adminReqsCache = [];
-let _adminReqsState = { sort:'created_at', dir:'desc', page:1, pageSize:10, search:'', filterStatus:'' };
+let _adminReqsState = {
+  sort:'created_at', dir:'desc', page:1, pageSize:10, search:'',
+  filterStatus:'', filterKategori:'', filterSumber:'', filterPic:''
+};
 
 async function viewAdminRequests(c){
   c.innerHTML = `
@@ -1805,18 +2161,30 @@ async function viewAdminRequests(c){
       <div class="card-head">
         <h3>Daftar Permintaan</h3>
         <div class="flex gap-2">
+          <button class="btn btn-accent btn-sm" id="mass-upload-btn"><span class="material-symbols-rounded" style="font-size:18px">upload_file</span>Mass Upload</button>
           <button class="btn btn-ghost btn-sm" id="csv-req"><span class="material-symbols-rounded" style="font-size:18px">download</span>Download CSV</button>
         </div>
       </div>
       <div class="card-body">
-        <div class="toolbar">
+        <div class="toolbar" style="flex-wrap:wrap">
           <div class="search">
             <span class="material-symbols-rounded">search</span>
             <input type="text" class="input" id="req-search" placeholder="Cari kode, nama, atau detail..." />
           </div>
-          <select class="select" id="req-filter-status" style="max-width:220px">
+          <select class="select" id="req-filter-kategori" style="max-width:220px">
+            <option value="">Semua Kategori</option>
+            ${Object.keys(KATEGORI_KODE).map(k=>`<option>${k}</option>`).join('')}
+          </select>
+          <select class="select" id="req-filter-status" style="max-width:200px">
             <option value="">Semua Status</option>
             ${STATUSES.map(s=>`<option>${s}</option>`).join('')}
+          </select>
+          <select class="select" id="req-filter-sumber" style="max-width:180px">
+            <option value="">Semua Sumber</option>
+            <option>WhatsApp</option><option>SmartOffice</option><option>Walk-in</option><option>Email</option>
+          </select>
+          <select class="select" id="req-filter-pic" style="max-width:200px">
+            <option value="">Semua PIC</option>
           </select>
         </div>
         <div id="req-table-host"></div>
@@ -1824,6 +2192,15 @@ async function viewAdminRequests(c){
     </div>
   `;
   _adminReqsCache = await db.listRequests();
+  // populate PIC filter from actual data + active staff
+  const picSet = new Set();
+  _adminReqsCache.forEach(r => { if(r.nama_pic_ga) picSet.add(r.nama_pic_ga); });
+  try{ (await db.listPicUsers()).forEach(u => picSet.add(u.full_name)); }catch{}
+  const picSel = $('#req-filter-pic');
+  Array.from(picSet).sort().forEach(p => {
+    const o = document.createElement('option'); o.value = p; o.textContent = p; picSel.appendChild(o);
+  });
+
   renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
 
   $('#req-search').addEventListener('input', e => {
@@ -1832,8 +2209,19 @@ async function viewAdminRequests(c){
     renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
   });
   $('#req-filter-status').addEventListener('change', e => {
-    _adminReqsState.filterStatus = e.target.value;
-    _adminReqsState.page = 1;
+    _adminReqsState.filterStatus = e.target.value; _adminReqsState.page = 1;
+    renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
+  });
+  $('#req-filter-kategori').addEventListener('change', e => {
+    _adminReqsState.filterKategori = e.target.value; _adminReqsState.page = 1;
+    renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
+  });
+  $('#req-filter-sumber').addEventListener('change', e => {
+    _adminReqsState.filterSumber = e.target.value; _adminReqsState.page = 1;
+    renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
+  });
+  $('#req-filter-pic').addEventListener('change', e => {
+    _adminReqsState.filterPic = e.target.value; _adminReqsState.page = 1;
     renderRequestsTable($('#req-table-host'), _adminReqsCache, { compact:false });
   });
   $('#csv-req').addEventListener('click', () => {
@@ -1859,6 +2247,7 @@ async function viewAdminRequests(c){
     }));
     csvDownload('daftar-permintaan-'+new Date().toISOString().slice(0,10)+'.csv', rows);
   });
+  $('#mass-upload-btn').addEventListener('click', () => openMassUploadModal());
 }
 
 function renderRequestsTable(host, data, opts){
@@ -1875,7 +2264,10 @@ function renderRequestsTable(host, data, opts){
       (r.kategori||'').toLowerCase().includes(s.search)
     );
   }
-  if(s.filterStatus) rows = rows.filter(r => r.status===s.filterStatus);
+  if(s.filterStatus)   rows = rows.filter(r => r.status===s.filterStatus);
+  if(s.filterKategori) rows = rows.filter(r => r.kategori===s.filterKategori);
+  if(s.filterSumber)   rows = rows.filter(r => r.sumber_pemesanan===s.filterSumber);
+  if(s.filterPic)      rows = rows.filter(r => (r.nama_pic_ga||'')===s.filterPic);
 
   // Sort
   rows.sort((a,b) => {
@@ -2039,7 +2431,7 @@ async function openRequestDetail(id){
 async function openRequestEdit(id){
   const r = await db.getRequest(id);
   if(!r) return;
-  const lok = await db.listLokasi(); const tuj = await db.listTujuan();
+  const [lok, tuj, picUsers] = await Promise.all([db.listLokasi(), db.listTujuan(), db.listPicUsers()]);
   openModal(`
     <div class="modal-head">
       <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">edit_note</span> Edit Permintaan</h3>
@@ -2059,7 +2451,13 @@ async function openRequestEdit(id){
           </div>
           <div class="field"><label>Total Anggaran (Rp)</label><input class="input" name="total_anggaran" id="ed-anggaran" inputmode="numeric" value="${r.total_anggaran?'Rp '+Number(r.total_anggaran).toLocaleString('id-ID'):''}"/></div>
           <div class="field"><label>Nama Vendor</label><input class="input" name="nama_vendor" value="${escapeHtml(r.nama_vendor||'')}"/></div>
-          <div class="field"><label>Nama PIC GA</label><input class="input" name="nama_pic_ga" value="${escapeHtml(r.nama_pic_ga||'')}"/></div>
+          <div class="field"><label>PIC GA</label>
+            <select class="select" name="pic_user_id" id="ed-pic">
+              <option value="">— Belum ditugaskan —</option>
+              ${picUsers.map(u => `<option value="${u.id}" ${u.id===r.pic_user_id?'selected':''}>${escapeHtml(u.full_name)} · ${escapeHtml(u.jabatan||u.role)}</option>`).join('')}
+            </select>
+            <span class="hint">PIC akan menerima notifikasi otomatis ketika ditugaskan.</span>
+          </div>
           <div class="field"><label>Estimasi Penyelesaian</label><input class="input" type="date" name="estimasi_penyelesaian" value="${r.estimasi_penyelesaian||''}"/></div>
           <div class="field"><label>Lokasi Kebutuhan</label>
             <select class="select" name="lokasi_kebutuhan">
@@ -2093,13 +2491,16 @@ async function openRequestEdit(id){
     const fd = new FormData($('#edit-form'));
     if(!fd.get('keterangan')){ toast('Keterangan wajib diisi','warn'); return; }
     const adjusted = (fd.get('total_anggaran')||'').toString().replace(/\D/g,'');
+    const pic_user_id = fd.get('pic_user_id') || null;
+    const picUser = picUsers.find(u => u.id === pic_user_id);
     const patch = {
       kode_smartoffice: fd.get('kode_smartoffice') || null,
       status: fd.get('status'),
       keterangan: fd.get('keterangan'),
       total_anggaran: adjusted ? Number(adjusted) : 0,
       nama_vendor: fd.get('nama_vendor') || null,
-      nama_pic_ga: fd.get('nama_pic_ga') || null,
+      pic_user_id: pic_user_id,
+      nama_pic_ga: picUser ? picUser.full_name : null,
       estimasi_penyelesaian: fd.get('estimasi_penyelesaian') || null,
       lokasi_kebutuhan: fd.get('lokasi_kebutuhan') || null,
       tujuan_kebutuhan: fd.get('tujuan_kebutuhan') || null,
@@ -2109,7 +2510,6 @@ async function openRequestEdit(id){
       await db.updateRequest(id, patch);
       _adminReqsCache = await db.listRequests();
       const host = $('#req-table-host'); if(host) renderRequestsTable(host, _adminReqsCache, {compact:false});
-      // Also refresh dashboard mini-table if showing
       const dh = $('#ads-table-host'); if(dh) renderRequestsTable(dh, _adminReqsCache, {compact:true});
       closeModal();
       toast('Permintaan diperbarui','success');
@@ -2367,8 +2767,8 @@ async function viewAdminUsers(c){
         <table class="t">
           <thead><tr>
             <th style="width:48px">#</th>
-            <th>Username</th><th>Nama Lengkap</th><th>Role</th>
-            <th>Status</th><th style="text-align:right">Aksi</th>
+            <th>Username</th><th>Nama Lengkap</th><th>Jabatan</th><th>Lokasi Kerja</th>
+            <th>Role</th><th>Status</th><th style="text-align:right">Aksi</th>
           </tr></thead>
           <tbody>
             ${users.length ? users.map((u,i)=>`
@@ -2376,17 +2776,19 @@ async function viewAdminUsers(c){
                 <td>${i+1}</td>
                 <td><span class="code-pill">${escapeHtml(u.username)}</span></td>
                 <td>${escapeHtml(u.full_name)}</td>
+                <td>${escapeHtml(u.jabatan||'—')}</td>
+                <td>${escapeHtml(u.lokasi_kerja||'—')}</td>
                 <td><span class="tag">${escapeHtml(u.role)}</span></td>
                 <td>${u.active!==false?'<span class="badge status-selesai">Aktif</span>':'<span class="badge status-ditolak">Nonaktif</span>'}</td>
                 <td style="text-align:right">
                   <div class="actions" style="justify-content:flex-end">
-                    <button class="btn-icon" data-id="${u.id}" data-act="edit"><span class="material-symbols-rounded">edit</span></button>
-                    <button class="btn-icon" data-id="${u.id}" data-act="pw"><span class="material-symbols-rounded">key</span></button>
-                    <button class="btn-icon" data-id="${u.id}" data-act="del"><span class="material-symbols-rounded">delete</span></button>
+                    <button class="btn-icon" data-id="${u.id}" data-act="edit" title="Edit"><span class="material-symbols-rounded">edit</span></button>
+                    <button class="btn-icon" data-id="${u.id}" data-act="pw" title="Ubah password"><span class="material-symbols-rounded">key</span></button>
+                    <button class="btn-icon" data-id="${u.id}" data-act="del" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
                   </div>
                 </td>
               </tr>
-            `).join('') : `<tr><td colspan="6" class="empty-row">Belum ada user</td></tr>`}
+            `).join('') : `<tr><td colspan="8" class="empty-row">Belum ada user</td></tr>`}
           </tbody>
         </table>
       </div>
@@ -2408,8 +2810,9 @@ async function viewAdminUsers(c){
   $('#add-user-btn').addEventListener('click', () => openUserModal(null, refresh));
 }
 
-function openUserModal(user, onDone){
+async function openUserModal(user, onDone){
   const isEdit = !!user;
+  const lokOpts = await db.listLokasi();
   openModal(`
     <div class="modal-head">
       <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">${isEdit?'edit':'person_add'}</span> ${isEdit?'Edit User':'Tambah User'}</h3>
@@ -2417,31 +2820,42 @@ function openUserModal(user, onDone){
     </div>
     <div class="modal-body">
       <form id="user-form">
-        <div class="field field-required"><label>Username</label>
-          <input class="input" name="username" required value="${escapeHtml(user?.username||'')}" ${isEdit?'disabled':''}/></div>
-        <div class="field field-required"><label>Nama Lengkap</label>
-          <input class="input" name="full_name" required value="${escapeHtml(user?.full_name||'')}"/></div>
-        <div class="field field-required"><label>Role</label>
-          <select class="select" name="role" required>
-            ${['superadmin','admin','pic'].map(r=>`<option ${user?.role===r?'selected':''}>${r}</option>`).join('')}
-          </select></div>
-        ${isEdit?`
-          <div class="field"><label>Status</label>
-            <select class="select" name="active">
-              <option value="true" ${user.active!==false?'selected':''}>Aktif</option>
-              <option value="false" ${user.active===false?'selected':''}>Nonaktif</option>
+        <div class="form-grid">
+          <div class="field field-required"><label>Username</label>
+            <input class="input" name="username" required value="${escapeHtml(user?.username||'')}" ${isEdit?'disabled':''}/></div>
+          <div class="field field-required"><label>Role</label>
+            <select class="select" name="role" required>
+              ${['superadmin','admin','pic'].map(r=>`<option ${user?.role===r?'selected':''}>${r}</option>`).join('')}
             </select></div>
-        `:`
-          <div class="field field-required"><label>Password</label>
-            <input class="input" type="password" name="password" required/></div>
-        `}
+          <div class="field full field-required"><label>Nama Lengkap</label>
+            <input class="input" name="full_name" required value="${escapeHtml(user?.full_name||'')}"/></div>
+          <div class="field"><label>Jabatan</label>
+            <input class="input" name="jabatan" value="${escapeHtml(user?.jabatan||'')}" placeholder="mis. GA Officer, Coordinator"/></div>
+          <div class="field"><label>Lokasi Kerja</label>
+            <input class="input" name="lokasi_kerja" list="lokasi-kerja-options" value="${escapeHtml(user?.lokasi_kerja||'')}" placeholder="mis. Kantor Pusat / Depo Lebak Bulus"/>
+            <datalist id="lokasi-kerja-options">
+              <option value="Kantor Pusat"></option>
+              ${lokOpts.map(l => `<option value="${escapeHtml(l.name)}"></option>`).join('')}
+            </datalist>
+          </div>
+          ${isEdit?`
+            <div class="field full"><label>Status</label>
+              <select class="select" name="active">
+                <option value="true" ${user.active!==false?'selected':''}>Aktif</option>
+                <option value="false" ${user.active===false?'selected':''}>Nonaktif</option>
+              </select></div>
+          `:`
+            <div class="field full field-required"><label>Password</label>
+              <input class="input" type="password" name="password" required/></div>
+          `}
+        </div>
       </form>
     </div>
     <div class="modal-foot">
       <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
       <button class="btn btn-primary" id="u-save"><span class="material-symbols-rounded">save</span>Simpan</button>
     </div>
-  `);
+  `, 'lg');
   $('#u-save').addEventListener('click', async () => {
     const fd = new FormData($('#user-form'));
     try{
@@ -2449,14 +2863,27 @@ function openUserModal(user, onDone){
         await db.updateUser(user.id, {
           full_name: fd.get('full_name'),
           role: fd.get('role'),
+          jabatan: fd.get('jabatan') || null,
+          lokasi_kerja: fd.get('lokasi_kerja') || null,
           active: fd.get('active')==='true'
         });
+        // If the edited user is the current session user, refresh session info
+        const cur = session.get();
+        if(cur && cur.id === user.id){
+          session.set({...cur,
+            full_name: fd.get('full_name'),
+            role: fd.get('role'),
+            jabatan: fd.get('jabatan')||null,
+            lokasi_kerja: fd.get('lokasi_kerja')||null});
+        }
         toast('User diperbarui','success');
       } else {
         await db.addUser({
           username: fd.get('username').trim(),
           full_name: fd.get('full_name'),
           role: fd.get('role'),
+          jabatan: fd.get('jabatan') || null,
+          lokasi_kerja: fd.get('lokasi_kerja') || null,
           password: fd.get('password')
         });
         toast('User ditambahkan','success');
@@ -2518,6 +2945,442 @@ async function viewAdminVersion(c){
       </div>
     </div>
   `;
+}
+
+/* ----------- ADMIN: TIKET SAYA -----------
+   Setiap personil GA punya halaman ini. Menampilkan tiket pending miliknya
+   dipisah menjadi beberapa tabel per status. Superadmin/admin bisa beralih
+   ke "Tampilan Tim" untuk melihat tiket pending dikelompokkan per PIC. */
+async function viewAdminMyTicket(c){
+  const me = session.get();
+  const [allReqs, allUsers] = await Promise.all([db.listRequests(), db.listUsers()]);
+  const isLead = me.role === 'superadmin' || me.role === 'admin';
+
+  c.innerHTML = `
+    <div class="profile-card">
+      <div class="av-lg">${escapeHtml((me.full_name||'A').slice(0,1).toUpperCase())}</div>
+      <div style="flex:1">
+        <h3>${escapeHtml(me.full_name)}</h3>
+        <div class="meta">
+          <span><span class="material-symbols-rounded" style="font-size:16px">badge</span>${escapeHtml(me.jabatan||me.role)}</span>
+          <span><span class="material-symbols-rounded" style="font-size:16px">place</span>${escapeHtml(me.lokasi_kerja||'—')}</span>
+          <span><span class="material-symbols-rounded" style="font-size:16px">account_circle</span>${escapeHtml(me.username||'')}</span>
+        </div>
+      </div>
+      ${isLead?`
+        <div>
+          <select class="select" id="mt-view-mode" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">
+            <option value="me">Tiket Saya</option>
+            <option value="team">Tampilan Tim</option>
+          </select>
+        </div>`:''}
+    </div>
+    <div id="mt-content"></div>
+  `;
+
+  function render(mode){
+    const host = $('#mt-content');
+    if(mode === 'team'){
+      // group pending tickets by PIC name; include "Belum Ditugaskan"
+      const pending = allReqs.filter(r => ['Belum Dikonfirmasi','Mencari Penyedia','Sedang Disiapkan','Tersedia'].includes(r.status));
+      const buckets = {};
+      const order = [];
+      // Pre-create buckets for all active staff so empty ones show
+      allUsers.filter(u => u.active !== false).forEach(u => {
+        buckets[u.full_name] = { user: u, items: [] };
+        order.push(u.full_name);
+      });
+      buckets['(Belum Ditugaskan)'] = { user: null, items: [] };
+      order.push('(Belum Ditugaskan)');
+      pending.forEach(r => {
+        const key = r.nama_pic_ga || '(Belum Ditugaskan)';
+        if(!buckets[key]){ buckets[key] = { user:null, items:[] }; order.push(key); }
+        buckets[key].items.push(r);
+      });
+      host.innerHTML = order.map(k => renderBucket(k, buckets[k].user, buckets[k].items, true)).join('')
+        || '<div class="muted">Tidak ada tiket pending.</div>';
+    } else {
+      // mode = 'me' — group MY pending tickets by status
+      const mine = allReqs.filter(r => r.pic_user_id === me.id
+        && ['Belum Dikonfirmasi','Mencari Penyedia','Sedang Disiapkan','Tersedia'].includes(r.status));
+      const statuses = ['Belum Dikonfirmasi','Mencari Penyedia','Sedang Disiapkan','Tersedia'];
+      host.innerHTML = statuses.map(s => {
+        const items = mine.filter(r => r.status === s);
+        return renderBucket(s, null, items, false);
+      }).join('');
+      if(!mine.length){
+        host.innerHTML += '<div class="card card-pad center muted" style="margin-top:8px">🎉 Tidak ada tiket pending untuk Anda saat ini.</div>';
+      }
+    }
+    // Wire up edit/view buttons inside the buckets
+    $$('button[data-mt-act]', host).forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.id; const act = b.dataset.mtAct;
+      if(act==='view') openRequestDetail(id);
+      else if(act==='edit') openRequestEdit(id);
+    }));
+  }
+
+  function renderBucket(title, user, items, showPicHeader){
+    const sub = user ? `<span style="color:var(--text-mut);font-size:12px;font-weight:500"> · ${escapeHtml(user.jabatan||user.role)} · ${escapeHtml(user.lokasi_kerja||'—')}</span>` : '';
+    return `
+      <div class="card bucket-card">
+        <div class="bucket-head">
+          <h3>${showPicHeader?'<span class="material-symbols-rounded" style="font-size:18px;color:var(--mrt-blue)">person</span>':'<span class="material-symbols-rounded" style="font-size:18px;color:var(--mrt-blue)">label</span>'} ${escapeHtml(title)}${sub}</h3>
+          <span class="bucket-count">${items.length}</span>
+        </div>
+        ${items.length ? `
+          <div class="table-wrap" style="border-radius:0">
+            <table class="t">
+              <thead><tr>
+                <th>Kode</th><th>Kategori</th><th>Pemesan</th>
+                ${showPicHeader?'<th>Status</th>':''}
+                <th>Tgl Kebutuhan</th><th>Detail</th>
+                <th style="text-align:right">Aksi</th>
+              </tr></thead>
+              <tbody>
+                ${items.map(r => `
+                  <tr>
+                    <td><span class="code-pill">${escapeHtml(r.kode_permintaan)}</span></td>
+                    <td><span class="tag">${escapeHtml(r.kategori_kode||'')}</span></td>
+                    <td>${escapeHtml(r.nama_pemesan)}</td>
+                    ${showPicHeader?`<td><span class="badge ${STATUS_CLASS[r.status]||''}">${escapeHtml(r.status)}</span></td>`:''}
+                    <td>${fmtDate(r.tanggal_kebutuhan)}</td>
+                    <td style="max-width:260px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(r.detail_kebutuhan||'')}">${escapeHtml(r.detail_kebutuhan||'')}</div></td>
+                    <td style="text-align:right">
+                      <div class="actions" style="justify-content:flex-end">
+                        <button class="btn-icon" data-id="${r.id}" data-mt-act="view" title="Detail"><span class="material-symbols-rounded">visibility</span></button>
+                        <button class="btn-icon" data-id="${r.id}" data-mt-act="edit" title="Update"><span class="material-symbols-rounded">edit</span></button>
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>` : '<div class="card-body muted text-sm">Tidak ada tiket pada kategori ini.</div>'}
+      </div>
+    `;
+  }
+
+  // initial render in "me" mode
+  render('me');
+  // mode switcher for leads
+  const modeSel = $('#mt-view-mode');
+  if(modeSel) modeSel.addEventListener('change', e => render(e.target.value));
+}
+
+/* ----------- MASS UPLOAD CSV MODAL -----------
+   Flow: pick file → parse & validate → preview → submit. */
+function openMassUploadModal(){
+  // CSV column spec
+  const COLS = [
+    {key:'kategori',         label:'Kategori',         required:true,  type:'enum', values:Object.keys(KATEGORI_KODE)},
+    {key:'kode_smartoffice', label:'Kode SmartOffice', required:false},
+    {key:'sumber_pemesanan', label:'Sumber Pemesanan', required:true,  type:'enum', values:['WhatsApp','SmartOffice','Walk-in','Email']},
+    {key:'nama_pemesan',     label:'Nama Pemesan',     required:true},
+    {key:'nama_kegiatan',    label:'Nama Kegiatan',    required:false},
+    {key:'lokasi_kebutuhan', label:'Lokasi Kebutuhan', required:false},
+    {key:'tujuan_kebutuhan', label:'Tujuan Kebutuhan', required:false},
+    {key:'tanggal_kebutuhan',label:'Tanggal Kebutuhan',required:true,  type:'date'},
+    {key:'detail_kebutuhan', label:'Detail Kebutuhan', required:true},
+    {key:'estimasi_harga',   label:'Estimasi Harga',   required:false, type:'number'}
+  ];
+
+  const renderModal = (step) => {
+    const stepper = `
+      <div class="stepper">
+        <div class="stp ${step>=1?(step===1?'active':'done'):''}"><span class="num">1</span>Upload</div>
+        <div class="stp ${step>=2?(step===2?'active':'done'):''}"><span class="num">2</span>Periksa & Preview</div>
+        <div class="stp ${step>=3?(step===3?'active':'done'):''}"><span class="num">3</span>Submit</div>
+      </div>`;
+    let body = '';
+    if(step === 1){
+      body = `
+        ${stepper}
+        <p class="muted text-sm" style="margin:0 0 14px">Unggah file CSV berisi daftar permintaan. Sistem akan memvalidasi setiap baris sebelum disimpan.</p>
+        <div class="drop-zone" id="mu-drop" tabindex="0">
+          <span class="material-symbols-rounded">cloud_upload</span>
+          <div class="fw-700">Klik atau seret file CSV ke sini</div>
+          <div class="muted text-sm">Maksimal 500 baris per file</div>
+          <input type="file" id="mu-file" accept=".csv,text/csv" style="display:none" />
+        </div>
+        <div class="card card-pad mt-4" style="background:var(--surface-2);border-radius:12px">
+          <div class="flex between items-center" style="margin-bottom:10px">
+            <strong style="font-size:14px"><span class="material-symbols-rounded" style="font-size:18px;vertical-align:-3px;color:var(--mrt-blue)">info</span> Tutorial Singkat</strong>
+            <button type="button" class="btn btn-accent btn-sm" id="mu-template"><span class="material-symbols-rounded" style="font-size:18px">download</span>Download Template</button>
+          </div>
+          <ol style="margin:0;padding-left:18px;font-size:13px;color:var(--text-2);line-height:1.7">
+            <li>Klik <em>Download Template</em> di kanan, isi sesuai contoh.</li>
+            <li>Kolom <strong>wajib</strong>: ${COLS.filter(c=>c.required).map(c=>c.label).join(', ')}.</li>
+            <li><strong>Kategori</strong> harus sama persis dengan salah satu: <em>Food and Beverage, Direct Purchase, Fasilitas Kantor dan Identitas Karyawan, Seragam, Office Supply, Event Support</em>.</li>
+            <li><strong>Tanggal Kebutuhan</strong> format <code>YYYY-MM-DD</code> (mis. <code>2026-05-20</code>).</li>
+            <li><strong>Estimasi Harga</strong> berupa angka tanpa titik/koma (mis. <code>1500000</code>).</li>
+            <li>Kode permintaan akan <strong>otomatis</strong> dibuat berdasarkan kategori; jangan diisi.</li>
+            <li>Encoding CSV sebaiknya <strong>UTF-8</strong>.</li>
+          </ol>
+        </div>
+      `;
+    } else if(step === 2){
+      body = `
+        ${stepper}
+        <div id="mu-preview-host"></div>
+      `;
+    } else if(step === 3){
+      body = `
+        ${stepper}
+        <div class="center" id="mu-progress">
+          <div class="success-mark" style="background:var(--mrt-blue-soft);color:var(--mrt-blue)"><span class="material-symbols-rounded" style="animation:spin 1s linear infinite">progress_activity</span></div>
+          <h3 style="margin:0 0 6px">Menyimpan permintaan...</h3>
+          <p class="muted" id="mu-progress-msg">Mohon tunggu</p>
+        </div>
+      `;
+    }
+    return `
+      <div class="modal-head">
+        <h3><span class="material-symbols-rounded" style="vertical-align:-6px;color:var(--mrt-blue)">upload_file</span> Mass Upload Permintaan</h3>
+        <button class="btn-icon" onclick="closeModal()"><span class="material-symbols-rounded">close</span></button>
+      </div>
+      <div class="modal-body">${body}</div>
+      <div class="modal-foot" id="mu-foot"></div>
+    `;
+  };
+
+  // state
+  let parsedRows = [];     // {row, errors[]}
+  let validRows = [];
+
+  function setStep(step){
+    $('#modal-content .modal').innerHTML = renderModal(step);
+    if(step === 1){
+      // wire up uploader
+      const dz = $('#mu-drop'); const fi = $('#mu-file');
+      dz.addEventListener('click', () => fi.click());
+      dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+      dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+      dz.addEventListener('drop', e => {
+        e.preventDefault(); dz.classList.remove('drag');
+        if(e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+      });
+      fi.addEventListener('change', () => { if(fi.files.length) handleFile(fi.files[0]); });
+      $('#mu-template').addEventListener('click', downloadTemplate);
+      $('#mu-foot').innerHTML = `<button class="btn btn-ghost" onclick="closeModal()">Batal</button>`;
+    } else if(step === 2){
+      renderPreview();
+      $('#mu-foot').innerHTML = `
+        <button class="btn btn-ghost" id="mu-back">Kembali</button>
+        <button class="btn btn-primary" id="mu-confirm" ${validRows.length===0?'disabled':''}>
+          <span class="material-symbols-rounded">cloud_upload</span>Submit ${validRows.length} permintaan
+        </button>
+      `;
+      $('#mu-back').addEventListener('click', () => setStep(1));
+      $('#mu-confirm').addEventListener('click', () => doSubmit());
+    } else if(step === 3){
+      $('#mu-foot').innerHTML = '';
+    }
+  }
+
+  // CSV parser — supports quoted fields & escaped quotes
+  function parseCSV(text){
+    text = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    const rows = []; let cur = []; let field = ''; let inQ = false;
+    for(let i=0; i<text.length; i++){
+      const ch = text[i];
+      if(inQ){
+        if(ch === '"' && text[i+1] === '"'){ field += '"'; i++; }
+        else if(ch === '"'){ inQ = false; }
+        else field += ch;
+      } else {
+        if(ch === '"'){ inQ = true; }
+        else if(ch === ','){ cur.push(field); field = ''; }
+        else if(ch === '\n'){ cur.push(field); rows.push(cur); cur = []; field = ''; }
+        else field += ch;
+      }
+    }
+    if(field.length || cur.length){ cur.push(field); rows.push(cur); }
+    // drop trailing empty rows
+    while(rows.length && rows[rows.length-1].every(c => !c || !c.trim())) rows.pop();
+    return rows;
+  }
+
+  function handleFile(file){
+    if(!file.name.toLowerCase().endsWith('.csv')){ toast('File harus berformat .csv','warn'); return; }
+    if(file.size > 2*1024*1024){ toast('File terlalu besar (maks 2 MB)','warn'); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const rows = parseCSV(reader.result);
+        if(rows.length < 2){ toast('CSV kosong atau tanpa header','warn'); return; }
+        const header = rows[0].map(h => h.trim());
+        // Validate header presence
+        const missingCols = COLS.filter(c => c.required && !header.includes(c.label));
+        if(missingCols.length){
+          toast('Kolom wajib hilang: ' + missingCols.map(c=>c.label).join(', '), 'error', 6000);
+          return;
+        }
+        if(rows.length > 501){
+          toast('Maksimal 500 baris data per upload','warn'); return;
+        }
+        parsedRows = rows.slice(1).map((arr, idx) => {
+          const obj = {}; header.forEach((h, i) => obj[h] = (arr[i]||'').trim());
+          return validateRow(obj, idx + 2); // +2 because line 1 is header
+        });
+        validRows = parsedRows.filter(p => p.errors.length === 0).map(p => p.payload);
+        setStep(2);
+      }catch(err){
+        console.error(err);
+        toast('Gagal membaca CSV: '+(err.message||''), 'error');
+      }
+    };
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  function validateRow(obj, lineNum){
+    const errors = [];
+    const get = (label) => (obj[label] || '').trim();
+    const kategori = get('Kategori');
+    if(!kategori) errors.push('Kategori kosong');
+    else if(!KATEGORI_KODE[kategori]) errors.push('Kategori tidak dikenali');
+
+    const sumber = get('Sumber Pemesanan');
+    if(!sumber) errors.push('Sumber Pemesanan kosong');
+
+    const nama = get('Nama Pemesan');
+    if(!nama) errors.push('Nama Pemesan kosong');
+
+    const tgl = get('Tanggal Kebutuhan');
+    if(!tgl) errors.push('Tanggal Kebutuhan kosong');
+    else if(!/^\d{4}-\d{2}-\d{2}$/.test(tgl) || isNaN(Date.parse(tgl)))
+      errors.push('Tanggal harus format YYYY-MM-DD');
+
+    const detail = get('Detail Kebutuhan');
+    if(!detail) errors.push('Detail Kebutuhan kosong');
+
+    const harga = get('Estimasi Harga');
+    if(harga && !/^\d+$/.test(harga.replace(/[.,\s]/g,''))) errors.push('Estimasi Harga harus angka');
+
+    const payload = errors.length ? null : {
+      kategori,
+      kategori_kode: KATEGORI_KODE[kategori],
+      kode_smartoffice: get('Kode SmartOffice') || null,
+      sumber_pemesanan: sumber,
+      nama_pemesan: nama,
+      nama_kegiatan: get('Nama Kegiatan') || null,
+      lokasi_kebutuhan: get('Lokasi Kebutuhan') || null,
+      tujuan_kebutuhan: get('Tujuan Kebutuhan') || null,
+      tanggal_kebutuhan: tgl,
+      detail_kebutuhan: detail,
+      estimasi_harga: harga ? Number(harga.replace(/[.,\s]/g,'')) : 0,
+      status: 'Belum Dikonfirmasi'
+    };
+    return { line: lineNum, raw: obj, errors, payload };
+  }
+
+  function renderPreview(){
+    const host = $('#mu-preview-host');
+    const valid = parsedRows.filter(p => p.errors.length === 0).length;
+    const invalid = parsedRows.length - valid;
+    host.innerHTML = `
+      <div class="flex gap-3 mb-4" style="flex-wrap:wrap">
+        <div class="card card-pad" style="flex:1;min-width:140px;background:var(--mrt-green-soft);border:1px solid var(--mrt-green-soft)">
+          <div class="muted text-sm">Valid</div>
+          <div style="font-size:24px;font-weight:800;color:var(--mrt-green)">${valid}</div>
+        </div>
+        <div class="card card-pad" style="flex:1;min-width:140px;background:#FEF2F2;border:1px solid #FECACA">
+          <div class="muted text-sm">Tidak Valid</div>
+          <div style="font-size:24px;font-weight:800;color:var(--danger)">${invalid}</div>
+        </div>
+        <div class="card card-pad" style="flex:1;min-width:140px;background:var(--mrt-blue-soft);border:1px solid var(--mrt-blue-soft)">
+          <div class="muted text-sm">Total Baris</div>
+          <div style="font-size:24px;font-weight:800;color:var(--mrt-blue)">${parsedRows.length}</div>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="max-height:340px;overflow:auto">
+        <table class="t">
+          <thead><tr>
+            <th style="width:46px">Baris</th>
+            <th style="width:64px">Status</th>
+            <th>Kategori</th><th>Pemesan</th><th>Tgl Kebutuhan</th><th>Detail</th><th>Catatan</th>
+          </tr></thead>
+          <tbody>
+            ${parsedRows.map(p => `
+              <tr class="preview-row ${p.errors.length?'invalid':''}">
+                <td class="mono">${p.line}</td>
+                <td>${p.errors.length
+                  ? '<span class="badge status-ditolak">Invalid</span>'
+                  : '<span class="badge status-selesai">OK</span>'}</td>
+                <td>${escapeHtml(p.raw['Kategori']||'')}</td>
+                <td>${escapeHtml(p.raw['Nama Pemesan']||'')}</td>
+                <td>${escapeHtml(p.raw['Tanggal Kebutuhan']||'')}</td>
+                <td style="max-width:240px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(p.raw['Detail Kebutuhan']||'')}">${escapeHtml(p.raw['Detail Kebutuhan']||'')}</div></td>
+                <td>${p.errors.length ? `<span class="err">${escapeHtml(p.errors.join(' · '))}</span>` : '<span class="muted text-sm">—</span>'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+      ${invalid ? `<p class="muted text-sm mt-3">⚠️ ${invalid} baris tidak valid akan diabaikan. Perbaiki file CSV dan upload ulang bila ingin memasukkan semuanya.</p>` : ''}
+    `;
+  }
+
+  async function doSubmit(){
+    setStep(3);
+    const msg = $('#mu-progress-msg');
+    let inserted = 0; let failed = 0;
+    for(let i = 0; i < validRows.length; i++){
+      const payload = validRows[i];
+      try{
+        const kode = await db.generateCode(payload.kategori_kode);
+        await db.insertRequest({ ...payload, kode_permintaan: kode });
+        inserted++;
+      }catch(err){
+        console.error(err); failed++;
+      }
+      if(msg) msg.textContent = `Memproses ${i+1} / ${validRows.length}...`;
+    }
+    // refresh table
+    try{
+      _adminReqsCache = await db.listRequests();
+      const host = $('#req-table-host'); if(host) renderRequestsTable(host, _adminReqsCache, {compact:false});
+    }catch{}
+
+    $('#modal-content .modal-body').innerHTML = `
+      <div class="center">
+        <div class="success-mark"><span class="material-symbols-rounded">check</span></div>
+        <h3 style="margin:0 0 6px">Selesai!</h3>
+        <p class="muted">Berhasil menyimpan <strong style="color:var(--mrt-green)">${inserted}</strong> permintaan${failed?` · gagal <strong style="color:var(--danger)">${failed}</strong>`:''}.</p>
+      </div>
+    `;
+    $('#mu-foot').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Tutup</button>`;
+    toast(`Mass upload selesai: ${inserted} berhasil`, 'success');
+  }
+
+  function downloadTemplate(){
+    const header = COLS.map(c => c.label).join(',');
+    const today = new Date();
+    today.setDate(today.getDate()+7);
+    const exampleDate = today.toISOString().slice(0,10);
+    const sample1 = [
+      'Food and Beverage','SO-FB-2026-0099','WhatsApp','Ahmad Rifai',
+      'Rapat Mingguan','Lantai 5 - Meeting Room A','Rapat Internal',
+      exampleDate,'Snack box 15 pax + air mineral','1200000'
+    ].map(v => /[",]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',');
+    const sample2 = [
+      'Office Supply','','SmartOffice','Lina Marlina',
+      '','Lantai 10 - Open Space','Operasional Harian',
+      exampleDate,'Tinta printer Epson L120, 4 botol warna','450000'
+    ].map(v => /[",]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',');
+    const csv = '\ufeff' + [header, sample1, sample2].join('\n');
+    const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'template-mass-upload-permintaan.csv'; a.click();
+    URL.revokeObjectURL(url);
+    toast('Template diunduh','success', 1500);
+  }
+
+  // open with step 1
+  openModal('<div></div>', 'lg');
+  setStep(1);
 }
 
 /* ----------- PUBLIC: VERSION ----------- */

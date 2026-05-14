@@ -17,16 +17,22 @@ Portal internal **General Affairs MRT Jakarta** untuk merangkum permintaan opera
 
 ### Panel Admin
 - **Dashboard** statistik & chart per kategori + tabel ringkas permintaan terbaru.
+- **Tiket Saya** — halaman pribadi setiap personil GA yang menampilkan tiket pending miliknya, dipisah menjadi 4 tabel berdasarkan status (`Belum Dikonfirmasi`, `Mencari Penyedia`, `Sedang Disiapkan`, `Tersedia`). Superadmin/admin punya toggle **Tampilan Tim** untuk melihat tiket pending semua personil dikelompokkan per PIC.
 - **Daftar Permintaan** dengan:
-  - Pagination (10 baris per halaman) + sort per kolom + search + filter status.
-  - CRUD lengkap melalui modal — update status, keterangan (wajib), total anggaran (delimiter Rupiah), vendor, PIC GA, estimasi penyelesaian.
+  - Pagination (10 baris per halaman) + sort per kolom.
+  - **Filter per kolom**: Kategori, Status, Sumber, PIC.
+  - Search bebas (kode/nama/detail).
+  - CRUD lengkap melalui modal — update status, keterangan (wajib), total anggaran (delimiter Rupiah), vendor, **PIC GA (dropdown dari daftar user)**, estimasi penyelesaian.
   - Tombol **rantai** untuk menyalin tautan penilaian (muncul saat status = "Selesai").
+  - **Mass Upload CSV** — modal stepper 3 langkah (Upload → Periksa & Preview → Submit) lengkap dengan tombol download template dan tutorial in-place.
   - Ekspor **CSV**.
 - **Daftar Penilaian** — seluruh permintaan selesai dengan kolom *Sudah/Belum Dinilai*, tombol info untuk popup detail, ekspor CSV.
 - **Master Data** — CRUD untuk Lokasi & Tujuan Kebutuhan (langsung memengaruhi dropdown di formulir publik).
-- **Manajemen User** — CRUD user + role (`superadmin` / `admin` / `pic`) + ubah password.
+- **Manajemen User** — CRUD user dengan kolom **Username, Nama Lengkap, Jabatan, Lokasi Kerja, Role** (`superadmin` / `admin` / `pic`), status aktif/nonaktif, dan ubah password.
 - **Riwayat Versi** changelog yang sama dengan halaman publik.
+- **Notifikasi lonceng** di header — badge angka untuk unread, dropdown daftar notifikasi, polling 30 detik, tombol "Tandai Sudah Dibaca". Notifikasi otomatis dibuat ketika PIC diubah/ditugaskan ke permintaan baru.
 - **Sidebar dengan hamburger** — collapse di desktop, slide-in overlay di mobile.
+- **Persistent session** — login tetap berlaku saat berpindah antara landing dan admin, tidak akan auto-logout. Tombol logout muncul di kedua halaman.
 
 ### Desain
 - Palet **biru tua + hijau** ala MRT Jakarta.
@@ -104,11 +110,13 @@ Karena ini *single HTML file*, Anda bisa:
 
 ## 🔑 Kredensial Default
 
-| Username | Password   | Role         |
-| -------- | ---------- | ------------ |
-| `admin`  | `admin123` | superadmin   |
-| `ga.budi`| `budi123`  | admin        |
-| `ga.siti`| `siti123`  | pic          |
+| Username | Password   | Role         | Jabatan                | Lokasi Kerja          |
+| -------- | ---------- | ------------ | ---------------------- | --------------------- |
+| `admin`  | `admin123` | superadmin   | Head of General Affairs| Kantor Pusat          |
+| `ga.budi`| `budi123`  | admin        | GA Coordinator         | Kantor Pusat          |
+| `ga.siti`| `siti123`  | pic          | GA Officer             | Depo Lebak Bulus      |
+| `ga.rian`| `rian123`  | pic          | GA Officer             | Depo Velodrome        |
+| `ga.dewi`| `dewi123`  | pic          | GA Officer             | Stasiun Bundaran HI   |
 
 > **Ganti segera setelah login pertama** dari halaman *Manajemen User*.
 
@@ -116,22 +124,27 @@ Karena ini *single HTML file*, Anda bisa:
 
 ## 🗃️ Skema Database (ringkas)
 
-| Tabel             | Fungsi                                                       |
-| ----------------- | ------------------------------------------------------------ |
-| `requests`        | Tabel utama permintaan (kode unik, kategori, status, dsb.)   |
-| `ratings`         | 1 penilaian per permintaan (1–5 bintang + kritik/saran)      |
-| `app_users`       | Akun admin (password bcrypt via `pgcrypto`)                  |
-| `lokasi_options`  | Master lokasi (dropdown)                                     |
-| `tujuan_options`  | Master tujuan (dropdown)                                     |
-| `counters`        | Counter harian untuk nomor urut kode permintaan              |
-| `version_history` | Changelog                                                    |
+| Tabel             | Fungsi                                                            |
+| ----------------- | ----------------------------------------------------------------- |
+| `requests`        | Tabel utama permintaan (kode unik, kategori, status, `pic_user_id`)|
+| `ratings`         | 1 penilaian per permintaan (1–5 bintang + kritik/saran)           |
+| `notifications`   | Inbox notifikasi per user (dibuat otomatis oleh trigger SQL)      |
+| `app_users`       | Akun admin/staff (password bcrypt, + `jabatan` & `lokasi_kerja`)  |
+| `lokasi_options`  | Master lokasi (dropdown)                                          |
+| `tujuan_options`  | Master tujuan (dropdown)                                          |
+| `counters`        | Counter harian untuk nomor urut kode permintaan                   |
+| `version_history` | Changelog                                                         |
 
 ### Fungsi RPC yang dipakai aplikasi
 
 - `fn_generate_request_code(prefix)` — atomic generator kode `PREFIX-DDMMYYYY####`.
-- `fn_login(username, password)` — login dengan verifikasi bcrypt.
-- `fn_create_user(username, password, full_name, role)` — buat user dengan password bcrypt-hash.
+- `fn_login(username, password)` — login dengan verifikasi bcrypt; mengembalikan `id, username, full_name, role, jabatan, lokasi_kerja`.
+- `fn_create_user(username, password, full_name, role, jabatan, lokasi_kerja)` — buat user dengan password bcrypt-hash.
 - `fn_set_password(user_id, password)` — ubah password (bcrypt).
+
+### Trigger
+
+- `trg_notify_pic` — saat `pic_user_id` di-set/diubah pada `requests`, otomatis membuat row baru di `notifications` untuk user yang ditugaskan.
 
 ### Kode permintaan
 Format: `<PREFIX>-DDMMYYYY####`, dengan PREFIX:
@@ -185,6 +198,64 @@ Konfigurasi default sengaja **permisif** agar mudah diuji:
 - **Warna**: ubah variabel CSS di bagian `:root` (`--mrt-blue`, `--mrt-green`, dst.).
 - **Kategori baru**: tambahkan key ke `KATEGORI_KODE` di JS **dan** ke `check` constraint pada tabel `requests` di SQL.
 - **Tambah master data lain**: ikuti pola `lokasi_options` / `tujuan_options` di SQL dan fungsi `db.*` di JS.
+
+---
+
+## 📤 Mass Upload Permintaan (CSV)
+
+Dari halaman **Daftar Permintaan**, klik tombol **Mass Upload** di kanan atas untuk membuka modal 3 langkah:
+
+1. **Upload** — drag-and-drop atau pilih file `.csv`. Tombol *Download Template* tersedia di dalam modal.
+2. **Periksa & Preview** — sistem memvalidasi setiap baris. Baris invalid ditandai merah dengan keterangan errornya (tetap ditampilkan tapi diabaikan saat submit).
+3. **Submit** — baris valid disimpan satu per satu; setiap permintaan dapat kode otomatis sesuai kategorinya.
+
+### Format kolom CSV
+
+Header harus persis seperti berikut (case-sensitive, pemisah koma, encoding UTF-8):
+
+| Kolom                   | Wajib | Format / Nilai yang valid                                  |
+| ----------------------- | ----- | ---------------------------------------------------------- |
+| `Kategori`              | ✅    | Salah satu: `Food and Beverage`, `Direct Purchase`, `Fasilitas Kantor dan Identitas Karyawan`, `Seragam`, `Office Supply`, `Event Support` |
+| `Kode SmartOffice`      | —     | Bebas (untuk kategori FB/DP/OS/EV)                         |
+| `Sumber Pemesanan`      | ✅    | `WhatsApp` / `SmartOffice` / `Walk-in` / `Email`           |
+| `Nama Pemesan`          | ✅    | Teks                                                       |
+| `Nama Kegiatan`         | —     | Teks                                                       |
+| `Lokasi Kebutuhan`      | —     | Teks (sebaiknya sesuai master Lokasi)                      |
+| `Tujuan Kebutuhan`      | —     | Teks (sebaiknya sesuai master Tujuan)                      |
+| `Tanggal Kebutuhan`     | ✅    | `YYYY-MM-DD` (mis. `2026-05-20`)                           |
+| `Detail Kebutuhan`      | ✅    | Teks                                                       |
+| `Estimasi Harga`        | —     | Angka tanpa pemisah ribuan (mis. `1500000`)                |
+
+**Batas:** maksimal **500 baris** per file, ukuran maksimal **2 MB**.
+
+> Kode permintaan dibuat **otomatis** oleh sistem berdasarkan kategori — jangan diisi di CSV.
+
+---
+
+## 🔔 Notifikasi
+
+- Setiap kali admin men-set/mengubah PIC pada permintaan (lewat modal edit), trigger SQL `trg_notify_pic` otomatis membuat notifikasi baru untuk user PIC tersebut.
+- Lonceng di header admin akan menampilkan **badge angka merah** untuk jumlah notifikasi belum dibaca, dengan animasi pulse.
+- Klik lonceng untuk membuka dropdown. Klik item notifikasi untuk membuka detail permintaan.
+- Klik **Tandai Sudah Dibaca** untuk menandai semua notifikasi user saat ini sebagai sudah dibaca — badge akan hilang.
+- Polling otomatis setiap **30 detik** sehingga notifikasi baru muncul tanpa perlu refresh.
+
+---
+
+## 🧾 Halaman "Tiket Saya"
+
+Setiap personil GA punya halaman pribadi yang dipisah menjadi 4 tabel berdasarkan status:
+
+- **Belum Dikonfirmasi**
+- **Mencari Penyedia**
+- **Sedang Disiapkan**
+- **Tersedia**
+
+Hanya menampilkan tiket di mana `pic_user_id` = user yang sedang login. Tombol aksi di setiap baris membuka detail atau modal edit langsung dari halaman ini.
+
+**Superadmin & admin** mendapat toggle **Tampilan Tim** untuk melihat tiket pending **semua personil** dikelompokkan per PIC (termasuk bucket "Belum Ditugaskan" untuk tiket tanpa PIC).
+
+---
 
 ---
 
