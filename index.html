@@ -3889,8 +3889,13 @@ async function downloadTandaTerima(req){
   // dan juga di bawah teks keterangan
   const keteranganBottomY = afterTableY + 10 + (keteranganLines.length * 4.5);
   let sigY = Math.max(qrBottomY, keteranganBottomY) + 6;
-  // Cegah signature melewati margin bawah halaman
-  if(sigY + 50 > H - 14) sigY = H - 60;
+  
+   // Kalau ruang vertikal tidak cukup untuk signature block di halaman ini,
+  // pindahkan ke halaman baru (lebih baik dari pada nabrak QR di atas).
+  if(sigY + 50 > H - 14){
+    doc.addPage();
+    sigY = M + 8;
+  }
 
   doc.setDrawColor(0, 168, 89);
   doc.setLineWidth(0.5);
