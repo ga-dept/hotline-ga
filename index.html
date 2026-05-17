@@ -781,15 +781,14 @@ table.t{
     <div class="public-nav-inner">
       <div class="brand">
         <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
-        <div class="brand-name"><strong>GA Hotline Portal</strong><span>General Affairs · MRT Jakarta</span></div>
+        <div class="brand-name"><strong>CRM Portal</strong><span>General Affairs · MRT Jakarta</span></div>
       </div>
       <div class="nav-links" id="landing-nav-links">
         <a href="#dashboard">Dashboard</a>
         <a href="#tracker">Cek Permintaan</a>
         <a href="#howto">Cara Pakai</a>
         <a href="#form">Buat Permintaan</a>
-        <a href="#/version" class="btn btn-ghost btn-sm" style="margin-left:6px"><span class="material-symbols-rounded" style="font-size:18px">history</span>Riwayat</a>
-        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Admin</a></span>
+        <span id="landing-auth-slot"><a href="#/login" class="btn btn-nav-admin btn-sm"><span class="material-symbols-rounded" style="font-size:18px">login</span>Login</a></span>
       </div>
     </div>
   </nav>
@@ -797,12 +796,7 @@ table.t{
   <section class="hero">
     <div class="hero-shape"></div>
     <div class="hero-inner">
-      <div class="hero-eyebrow">
-        <span class="material-symbols-rounded" style="font-size:16px">verified</span>
-        Layanan resmi General Affairs
-      </div>
-      <h1>Satu pintu untuk seluruh<br>permintaan operasional <span class="accent">General Affairs</span></h1>
-      <p>Rangkum permintaan dari WhatsApp dan SmartOffice dalam satu portal — ajukan, pantau, dan nilai pelayanan dengan mudah.</p>
+      <h1>CRM Dashboard<br>General Affairs Department<br><span class="accent">PT MRT Jakarta (Perseroda)</span></h1>
       <div class="hero-actions">
         <a href="#form" class="btn btn-primary"><span class="material-symbols-rounded">add_circle</span>Buat Permintaan</a>
         <a href="#tracker" class="btn btn-accent"><span class="material-symbols-rounded">search</span>Cek Status</a>
@@ -825,12 +819,12 @@ table.t{
 
       <div class="split-2 mt-6">
         <div class="card">
-          <div class="card-head"><h3>Permintaan per Kategori</h3><span class="tag">Bar Chart</span></div>
+          <div class="card-head"><h3>Permintaan per Kategori</h3></div>
           <div class="card-body"><canvas id="chart-category" height="180"></canvas></div>
         </div>
 
         <div class="card" id="tracker">
-          <div class="card-head"><h3>Cek Status Permintaan</h3><span class="tag green">Tracking</span></div>
+          <div class="card-head"><h3>Cek Status Permintaan</h3></div>
           <div class="card-body">
             <p class="muted text-sm" style="margin:0 0 12px">Masukkan kode permintaan Anda (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) untuk melihat status terkini.</p>
             <div class="tracker-input-row">
@@ -849,7 +843,6 @@ table.t{
       <div class="section-head">
         <div class="kicker">Formulir</div>
         <h2>Buat Permintaan Baru</h2>
-        <p>Lengkapi formulir berikut. Klik judul kartu untuk minimize/expand bila perlu.</p>
       </div>
 
       <div class="collapse-card">
@@ -951,8 +944,7 @@ table.t{
   <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
     <div class="section-inner">
       <div class="section-head center">
-        <div class="kicker">Mudah & Cepat</div>
-        <h2>Cara Pakai Portal</h2>
+        <h2>Cara Penggunaan</h2>
         <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
       </div>
       <div class="steps">
@@ -1129,8 +1121,8 @@ table.t{
    ============================================================ */
 
 /* ---------- CONFIG (edit these two values) ---------- */
-const SUPABASE_URL = window.__SUPA_URL__ || 'https://YOUR-PROJECT-REF.supabase.co';
-const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'YOUR_ANON_KEY';
+const SUPABASE_URL = window.__SUPA_URL__ || 'https://ekgebayrtjdjxsegcmru.supabase.co';
+const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ2ViYXlydGpkanhzZWdjbXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzM3OTAsImV4cCI6MjA5NDE0OTc5MH0.JUwWYQiGIY4PkHei0XI1HgdchynMSkQzarpDiH-guyE';
 
 /* If the user hasn't configured Supabase yet, run in DEMO mode with
    in-memory data so the UI still works for inspection. */
