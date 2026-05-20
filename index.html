@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>GA Hotline Portal — General Affairs MRT</title>
+<title>CRM Portal — General Affairs</title>
 <link rel="icon" type="image/png" href="logo.png" />
 <link rel="apple-touch-icon" href="logo.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -15,6 +15,8 @@
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/davidshimjs/qrcodejs/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
 <style>
 /* ============================================================
@@ -796,7 +798,7 @@ table.t{
   <section class="hero">
     <div class="hero-shape"></div>
     <div class="hero-inner">
-      <h1>CRM Dashboard<br>General Affairs Department<br><span class="accent">PT MRT Jakarta (Perseroda)</span></h1>
+      <h1>CRM Dashboard <br>General Affairs <br> <span class="accent">MRT Jakarta</span></h1>
       <div class="hero-actions">
         <a href="#form" class="btn btn-primary"><span class="material-symbols-rounded">add_circle</span>Buat Permintaan</a>
         <a href="#tracker" class="btn btn-accent"><span class="material-symbols-rounded">search</span>Cek Status</a>
@@ -826,9 +828,9 @@ table.t{
         <div class="card" id="tracker">
           <div class="card-head"><h3>Cek Status Permintaan</h3></div>
           <div class="card-body">
-            <p class="muted text-sm" style="margin:0 0 12px">Masukkan kode permintaan Anda (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) untuk melihat status terkini.</p>
+            <p class="muted text-sm" style="margin:0 0 12px">Masukkan <strong>kode permintaan</strong> (contoh: <span class="code-pill" style="padding:2px 8px;font-size:12px">FB-120520260001</span>) atau <strong>kode SmartOffice</strong> Anda untuk melihat status terkini.</p>
             <div class="tracker-input-row">
-              <input type="text" class="input" id="track-input" placeholder="Masukkan kode permintaan..." />
+              <input type="text" class="input" id="track-input" placeholder="Kode permintaan atau kode SmartOffice..." />
               <button class="btn btn-primary" id="track-btn"><span class="material-symbols-rounded">search</span><span class="hide-sm">Cek</span></button>
             </div>
             <div class="tracker-result" id="track-result"></div>
@@ -843,6 +845,7 @@ table.t{
       <div class="section-head">
         <div class="kicker">Formulir</div>
         <h2>Buat Permintaan Baru</h2>
+        <p>Lengkapi formulir berikut. Klik judul kartu untuk minimize/expand bila perlu.</p>
       </div>
 
       <div class="collapse-card">
@@ -866,9 +869,8 @@ table.t{
                 </select>
               </div>
               <div class="field">
-                <label>Kode Pemesanan (otomatis)</label>
+                <label>Kode Pemesanan</label>
                 <input type="text" class="input" name="kode_preview" id="kode-preview" disabled placeholder="Akan muncul setelah memilih kategori" />
-                <span class="hint">Format: PREFIX-DDMMYYYY####</span>
               </div>
 
               <div class="field" id="smartoffice-field" style="display:none">
@@ -892,7 +894,19 @@ table.t{
                 <label>Nama Pemesan</label>
                 <input type="text" class="input" name="nama_pemesan" required placeholder="Nama lengkap" />
               </div>
-              <div class="field">
+              <div class="field field-required">
+                <label>Divisi</label>
+                <select class="select" name="divisi" id="select-divisi">
+                  <option value="">-- Memuat --</option>
+                </select>
+              </div>
+              <div class="field field-required">
+                <label>Departemen</label>
+                <select class="select" name="departemen" id="select-departemen">
+                  <option value="">— Pilih Divisi terlebih dahulu —</option>
+                </select>
+              </div>
+              <div class="field field-required">
                 <label>Nama Kegiatan</label>
                 <input type="text" class="input" name="nama_kegiatan" placeholder="Mis. Rapat Bulanan Divisi" />
               </div>
@@ -910,6 +924,12 @@ table.t{
                 </select>
               </div>
 
+              <div class="field">
+                <label>Mata Anggaran</label>
+                <select class="select" name="mata_anggaran" id="select-mata-anggaran">
+                  <option value="">-- Memuat --</option>
+                </select>
+              </div>
               <div class="field field-required">
                 <label>Tanggal Kebutuhan</label>
                 <input type="date" class="input" name="tanggal_kebutuhan" required />
@@ -917,7 +937,6 @@ table.t{
               <div class="field">
                 <label>Estimasi Harga</label>
                 <input type="text" class="input" name="estimasi_harga" id="input-harga" inputmode="numeric" placeholder="Rp 0" />
-                <span class="hint">Akan diformat otomatis</span>
               </div>
 
               <div class="field full field-required">
@@ -944,8 +963,7 @@ table.t{
   <section class="section" id="howto" style="background:#fff;border-top:1px solid var(--border-2);border-bottom:1px solid var(--border-2)">
     <div class="section-inner">
       <div class="section-head center">
-        <h2>Cara Penggunaan</h2>
-        <p style="margin:6px auto 0">Empat langkah sederhana untuk mengajukan dan memantau permintaan Anda.</p>
+        <h2>Cara Pakai Portal</h2>
       </div>
       <div class="steps">
         <div class="step"><div class="step-num">1</div>
@@ -966,7 +984,7 @@ table.t{
 
   <footer class="public-footer">
     <div class="public-footer-inner">
-      <div>© 2026 General Affairs · PT MRT Jakarta. All rights reserved.</div>
+      <div>© 2026 General Affairs · PT MRT Jakarta (Perseroda)</div>
       <div><a href="#/version">Riwayat Versi</a> · <a href="#/login">Login Admin</a></div>
     </div>
   </footer>
@@ -981,17 +999,13 @@ table.t{
           <div class="brand-mark"><img src="logo.png" alt="GA" onload="this.parentElement.classList.add('has-img')" onerror="this.parentElement.classList.remove('has-img');this.outerHTML='GA'" /></div>
           <div class="brand-name"><strong style="color:#fff">GA Hotline Portal</strong><span style="color:#CFDCEE">Admin Dashboard</span></div>
         </div>
-        <h2>Selamat datang kembali.<br>Kelola permintaan dengan tenang.</h2>
-        <p>Dasbor admin untuk memonitor, memproses, dan menilai kinerja layanan General Affairs MRT Jakarta dari satu tempat.</p>
-      </div>
-      <div class="quote">
-        "Layanan internal yang baik dimulai dari sistem yang rapi. Portal ini dibuat untuk membantu tim GA bekerja lebih cepat dan transparan."
+        <h2>Selamat datang kembali!</h2>
       </div>
     </div>
     <div class="login-right">
       <div class="login-box">
-        <h3>Masuk ke Admin</h3>
-        <p class="sub">Gunakan akun admin GA Anda</p>
+        <h3>Masuk ke CPanel</h3>
+        <p class="sub">Gunakan akun yang telah diberikan</p>
         <form id="login-form">
           <div class="field"><label>Username</label><input type="text" class="input" name="username" required autocomplete="username" /></div>
           <div class="field"><label>Password</label><input type="password" class="input" name="password" required autocomplete="current-password" /></div>
@@ -1121,7 +1135,7 @@ table.t{
    ============================================================ */
 
 /* ---------- CONFIG (edit these two values) ---------- */
-const SUPABASE_URL = window.__SUPA_URL__ || 'https://ekgebayrtjdjxsegcmru.supabase.co';
+const SUPABASE_URL = window.__SUPA_URL__ || 'https://https://ekgebayrtjdjxsegcmru.supabase.co';
 const SUPABASE_ANON_KEY = window.__SUPA_KEY__ || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVrZ2ViYXlydGpkanhzZWdjbXJ1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1NzM3OTAsImV4cCI6MjA5NDE0OTc5MH0.JUwWYQiGIY4PkHei0XI1HgdchynMSkQzarpDiH-guyE';
 
 /* If the user hasn't configured Supabase yet, run in DEMO mode with
@@ -1263,10 +1277,49 @@ const demo = (() => {
     {id:'v2',version:'1.1.0',release_date:'2026-05-08',changes:'Tambah fitur penilaian kepuasan via tautan & halaman Daftar Penilaian.'},
     {id:'v3',version:'1.2.0',release_date:'2026-05-12',changes:'Manajemen master data lokasi & tujuan, ekspor CSV, role-based user management.'},
     {id:'v4',version:'1.3.0',release_date:'2026-05-14',changes:'Mass upload CSV permintaan, notifikasi lonceng, halaman Tiket Saya per personil GA, kolom jabatan & lokasi kerja di user, filter per kolom di Daftar Permintaan, persistent session.'},
-    {id:'v5',version:'1.4.0',release_date:'2026-05-16',changes:'Master data Lokasi Kerja terpisah, halaman Log Aktivitas, download tanda terima PDF saat status Tersedia, QR Code penilaian di tanda terima.'}
+    {id:'v5',version:'1.4.0',release_date:'2026-05-16',changes:'Master data Lokasi Kerja terpisah, halaman Log Aktivitas, download tanda terima PDF saat status Tersedia, QR Code penilaian di tanda terima.'},
+    {id:'v6',version:'1.5.0',release_date:'2026-05-17',changes:'Upload bukti foto & tanda terima saat Selesai, modul SLA Target per kategori (superadmin only), kolom & badge SLA di Daftar Permintaan, statistik SLA di Dashboard, edit completed_at oleh superadmin dengan audit trail.'},
+    {id:'v7',version:'1.6.0',release_date:'2026-05-18',changes:'Tracking by SmartOffice code, dashboard screenshot JPG, kolom Mata Anggaran (+master), kolom Divisi & Departemen (+master dengan cascading dropdown), tombol Backup Data XLSX multi-sheet.'}
   ];
 
-  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, seq, todayKey, nextCode };
+  // Mata Anggaran options
+  const mataAnggaran = [
+    {id:'ma1', name:'Operasional Harian',  kode:'OPS-001', description:'Kebutuhan harian kantor (ATK, snack, dll).'},
+    {id:'ma2', name:'Event & Gathering',   kode:'EVT-001', description:'Pengeluaran terkait event, townhall, gathering.'},
+    {id:'ma3', name:'Perawatan Fasilitas', kode:'MNT-001', description:'Perawatan & perbaikan fasilitas kantor.'},
+    {id:'ma4', name:'Pengadaan Seragam',   kode:'UFM-001', description:'Pengadaan seragam karyawan.'},
+    {id:'ma5', name:'Pengembangan SDM',    kode:'HRD-001', description:'Training, workshop, sertifikasi.'},
+    {id:'ma6', name:'Lain-lain',           kode:'OTH-001', description:'Pengeluaran lain di luar kategori utama.'},
+  ];
+
+  // Divisi options
+  const divisi = [
+    {id:'div1', name:'Direktorat Operasi & Pemeliharaan'},
+    {id:'div2', name:'Direktorat Corporate Services'},
+    {id:'div3', name:'Direktorat Engineering & Konstruksi'},
+    {id:'div4', name:'Direktorat Keuangan & SDM'},
+  ];
+
+  // Departemen options (each belongs to one Divisi)
+  const departemen = [
+    {id:'dep1',  name:'Operasi Stasiun',       divisi_id:'div1'},
+    {id:'dep2',  name:'Operasi Kereta',        divisi_id:'div1'},
+    {id:'dep3',  name:'Pemeliharaan Sarana',   divisi_id:'div1'},
+    {id:'dep4',  name:'Pemeliharaan Prasarana',divisi_id:'div1'},
+    {id:'dep5',  name:'General Affairs',       divisi_id:'div2'},
+    {id:'dep6',  name:'Legal & Compliance',    divisi_id:'div2'},
+    {id:'dep7',  name:'Procurement',           divisi_id:'div2'},
+    {id:'dep8',  name:'Corporate Communications',divisi_id:'div2'},
+    {id:'dep9',  name:'Engineering',           divisi_id:'div3'},
+    {id:'dep10', name:'Konstruksi',            divisi_id:'div3'},
+    {id:'dep11', name:'Project Management',    divisi_id:'div3'},
+    {id:'dep12', name:'Keuangan',              divisi_id:'div4'},
+    {id:'dep13', name:'Akuntansi',             divisi_id:'div4'},
+    {id:'dep14', name:'Human Capital',         divisi_id:'div4'},
+    {id:'dep15', name:'IT & Sistem',           divisi_id:'div4'},
+  ];
+
+  return { requests, ratings, notifications, lokasi, lokasiKerja, tujuan, users, version, activityLogs, slaTargets, mataAnggaran, divisi, departemen, seq, todayKey, nextCode };
 })();
 
 /* ============================================================
@@ -1284,9 +1337,22 @@ const db = {
     if(error) throw error; return data;
   },
   async getRequestByCode(code){
-    if(!SUPA_CONFIGURED) return demo.requests.find(r=>r.kode_permintaan.toLowerCase()===code.toLowerCase());
-    const { data, error } = await supa.from('requests').select('*').ilike('kode_permintaan',code).maybeSingle();
-    if(error) throw error; return data;
+    const needle = (code || '').trim();
+    if(!needle) return null;
+    if(!SUPA_CONFIGURED){
+      const lo = needle.toLowerCase();
+      // Match either the internal code (FB-...) OR the SmartOffice code (free-form).
+      return demo.requests.find(r =>
+        (r.kode_permintaan || '').toLowerCase() === lo ||
+        (r.kode_smartoffice || '').toLowerCase() === lo
+      );
+    }
+    // Supabase: OR-filter on either column. .ilike is case-insensitive exact (no wildcards passed).
+    const { data, error } = await supa.from('requests').select('*')
+      .or(`kode_permintaan.ilike.${needle},kode_smartoffice.ilike.${needle}`)
+      .limit(1);
+    if(error) throw error;
+    return (data && data[0]) || null;
   },
   async generateCode(prefix){
     if(!SUPA_CONFIGURED) return demo.nextCode(prefix);
@@ -1515,6 +1581,78 @@ const db = {
       return;
     }
     const { error } = await supa.from('requests').update(patch).eq('id',id);
+    if(error) throw error;
+  },
+
+  // ---- Mata Anggaran (master) ----
+  async listMataAnggaran(){
+    if(!SUPA_CONFIGURED) return [...demo.mataAnggaran];
+    const { data, error } = await supa.from('mata_anggaran_options').select('*').order('name');
+    if(error) throw error; return data || [];
+  },
+  async addMataAnggaran({name, kode, description}){
+    if(!SUPA_CONFIGURED){
+      const row = { id:'ma'+(demo.mataAnggaran.length+Date.now()), name, kode:kode||null, description:description||null, created_at:new Date().toISOString() };
+      demo.mataAnggaran.push(row); return row;
+    }
+    const { data, error } = await supa.from('mata_anggaran_options').insert({name, kode:kode||null, description:description||null}).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteMataAnggaran(id){
+    if(!SUPA_CONFIGURED){ demo.mataAnggaran = demo.mataAnggaran.filter(o => o.id !== id); return; }
+    const { error } = await supa.from('mata_anggaran_options').delete().eq('id',id);
+    if(error) throw error;
+  },
+
+  // ---- Divisi (master) ----
+  async listDivisi(){
+    if(!SUPA_CONFIGURED) return [...demo.divisi];
+    const { data, error } = await supa.from('divisi_options').select('*').order('name');
+    if(error) throw error; return data || [];
+  },
+  async addDivisi({name}){
+    if(!SUPA_CONFIGURED){
+      const row = { id:'div'+(demo.divisi.length+Date.now()), name, created_at:new Date().toISOString() };
+      demo.divisi.push(row); return row;
+    }
+    const { data, error } = await supa.from('divisi_options').insert({name}).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteDivisi(id){
+    if(!SUPA_CONFIGURED){
+      // cascade: drop departemen with this divisi_id
+      demo.departemen = demo.departemen.filter(d => d.divisi_id !== id);
+      demo.divisi = demo.divisi.filter(o => o.id !== id);
+      return;
+    }
+    // SQL: ON DELETE CASCADE handles departemen
+    const { error } = await supa.from('divisi_options').delete().eq('id',id);
+    if(error) throw error;
+  },
+
+  // ---- Departemen (master, FK ke divisi) ----
+  async listDepartemen(divisiId){
+    if(!SUPA_CONFIGURED){
+      let rows = demo.departemen;
+      if(divisiId) rows = rows.filter(d => d.divisi_id === divisiId);
+      return [...rows];
+    }
+    let q = supa.from('departemen_options').select('*').order('name');
+    if(divisiId) q = q.eq('divisi_id', divisiId);
+    const { data, error } = await q;
+    if(error) throw error; return data || [];
+  },
+  async addDepartemen({name, divisi_id}){
+    if(!SUPA_CONFIGURED){
+      const row = { id:'dep'+(demo.departemen.length+Date.now()), name, divisi_id, created_at:new Date().toISOString() };
+      demo.departemen.push(row); return row;
+    }
+    const { data, error } = await supa.from('departemen_options').insert({name, divisi_id}).select().single();
+    if(error) throw error; return data;
+  },
+  async deleteDepartemen(id){
+    if(!SUPA_CONFIGURED){ demo.departemen = demo.departemen.filter(d => d.id !== id); return; }
+    const { error } = await supa.from('departemen_options').delete().eq('id',id);
     if(error) throw error;
   },
 
@@ -1787,6 +1925,194 @@ function csvDownload(filename, rows){
   URL.revokeObjectURL(url);
 }
 
+/* ----- Dashboard Screenshot (JPG) -----
+   Uses html2canvas to rasterize #dash-capture-host into a high-DPI JPG.
+   Elements tagged with data-html2canvas-ignore (the action bar itself) are skipped. */
+async function captureDashboardJpg(){
+  const host = document.querySelector('#dash-capture-host');
+  if(!host){ toast('Dashboard tidak ditemukan','warn'); return; }
+  if(typeof html2canvas === 'undefined'){
+    toast('Library html2canvas belum termuat. Cek koneksi internet.','error');
+    return;
+  }
+  const btn = document.querySelector('#dash-screenshot');
+  const original = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Mengambil...'; }
+  try{
+    const canvas = await html2canvas(host, {
+      backgroundColor: '#FFFFFF',
+      scale: 2,                       // hi-DPI for crisp output
+      useCORS: true,
+      logging: false,
+      windowWidth: host.scrollWidth,
+      windowHeight: host.scrollHeight,
+    });
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+    const a = document.createElement('a');
+    const ts = new Date().toISOString().slice(0,16).replace(/[:T]/g,'-');
+    a.href = dataUrl;
+    a.download = `dashboard-CRM-GA-${ts}.jpg`;
+    a.click();
+    toast('Screenshot Dashboard berhasil diunduh','success');
+    db.logActivity({ action:'dashboard.screenshot', target_type:'dashboard', target_id:null,
+      detail:`Screenshot Dashboard di-download (${a.download})` });
+  }catch(err){
+    console.error('[screenshot]', err);
+    toast('Gagal mengambil screenshot: '+(err.message||''),'error');
+  }finally{
+    if(btn){ btn.disabled = false; btn.innerHTML = original; }
+  }
+}
+
+/* ----- Backup Data (XLSX, multi-sheet) -----
+   Sheets: Requests · Users · Ratings · Notifications · ActivityLogs ·
+           SlaTargets · MataAnggaran · Divisi · Departemen · Lokasi · LokasiKerja · Tujuan · Version. */
+async function downloadBackupXlsx(){
+  if(typeof XLSX === 'undefined'){
+    toast('Library SheetJS belum termuat. Cek koneksi internet.','error');
+    return;
+  }
+  const btn = document.querySelector('#dash-backup');
+  const original = btn ? btn.innerHTML : '';
+  if(btn){ btn.disabled = true; btn.innerHTML = '<span class="material-symbols-rounded">hourglass_top</span>Menyiapkan backup...'; }
+  try{
+    // Pull every dataset in parallel
+    const [reqs, users, slas, ma, divs, deps, lok, lk, tuj, ver, logs] = await Promise.all([
+      db.listRequests().catch(()=>[]),
+      db.listUsers().catch(()=>[]),
+      db.listSlaTargets().catch(()=>[]),
+      db.listMataAnggaran().catch(()=>[]),
+      db.listDivisi().catch(()=>[]),
+      db.listDepartemen().catch(()=>[]),
+      db.listLokasi().catch(()=>[]),
+      db.listLokasiKerja().catch(()=>[]),
+      db.listTujuan().catch(()=>[]),
+      db.listVersion().catch(()=>[]),
+      db.listActivityLogs ? db.listActivityLogs({}).catch(()=>[]) : Promise.resolve([])
+    ]);
+
+    // Ratings: walk request ids
+    let ratings = [];
+    for(const r of reqs){
+      try{
+        const rt = await db.getRatingByRequest(r.id);
+        if(rt) ratings.push({ ...rt, kode_permintaan:r.kode_permintaan, nama_pemesan:r.nama_pemesan });
+      }catch{}
+    }
+
+    // Notifications (best-effort)
+    let notifs = [];
+    try{
+      if(typeof supa !== 'undefined' && SUPA_CONFIGURED){
+        const { data } = await supa.from('notifications').select('*').order('created_at',{ascending:false}).limit(5000);
+        notifs = data || [];
+      } else {
+        notifs = (typeof demo !== 'undefined' && demo.notifications) ? [...demo.notifications] : [];
+      }
+    }catch{}
+
+    const wb = XLSX.utils.book_new();
+    const addSheet = (name, rows) => {
+      const ws = XLSX.utils.json_to_sheet(rows && rows.length ? rows : [{ note:'(kosong)' }]);
+      XLSX.utils.book_append_sheet(wb, ws, name.slice(0,31));   // Excel sheet name max 31 chars
+    };
+
+    // Flatten requests + add SLA info per row
+    const slaMap = {}; (slas||[]).forEach(s => slaMap[s.kategori] = s.target_hours);
+    const reqsOut = (reqs||[]).map(r => {
+      const target = slaMap[r.kategori] || null;
+      let resolusiJam = '';
+      let slaStatus = 'Belum Selesai';
+      if(r.completed_at){
+        const ms = new Date(r.completed_at) - new Date(r.created_at);
+        resolusiJam = (ms / 36e5).toFixed(2);
+        if(target != null) slaStatus = (Number(resolusiJam) <= target) ? 'On-time' : 'Terlambat';
+      }
+      return {
+        ID: r.id,
+        Kode_Permintaan: r.kode_permintaan,
+        Kode_SmartOffice: r.kode_smartoffice||'',
+        Kategori: r.kategori,
+        Sumber: r.sumber_pemesanan,
+        Nama_Pemesan: r.nama_pemesan,
+        Nama_Kegiatan: r.nama_kegiatan||'',
+        Divisi: r.divisi||'',
+        Departemen: r.departemen||'',
+        Mata_Anggaran: r.mata_anggaran||'',
+        Lokasi_Kebutuhan: r.lokasi_kebutuhan||'',
+        Tujuan_Kebutuhan: r.tujuan_kebutuhan||'',
+        Tanggal_Kebutuhan: r.tanggal_kebutuhan,
+        Detail: r.detail_kebutuhan,
+        Estimasi_Harga: r.estimasi_harga||0,
+        Total_Anggaran: r.total_anggaran||0,
+        Status: r.status,
+        Keterangan: r.keterangan||'',
+        Vendor: r.nama_vendor||'',
+        PIC_GA: r.nama_pic_ga||'',
+        Estimasi_Selesai: r.estimasi_penyelesaian||'',
+        Tgl_Dibuat: r.created_at,
+        Tgl_Selesai: r.completed_at||'',
+        SLA_Target_Jam: target ?? '',
+        Resolusi_Jam: resolusiJam,
+        SLA_Status: slaStatus,
+        Bukti_Foto_URL: r.bukti_foto_url||'',
+        Bukti_TandaTerima_URL: r.bukti_tt_url||'',
+        Completed_At_Edited_By: r.completed_at_edited_by||'',
+        Completed_At_Edited_At: r.completed_at_edited_at||'',
+        Completed_At_Edit_Reason: r.completed_at_edit_reason||''
+      };
+    });
+
+    addSheet('Requests',      reqsOut);
+    addSheet('Users',         (users||[]).map(u => ({
+      ID:u.id, Username:u.username, Nama_Lengkap:u.full_name, Role:u.role,
+      Jabatan:u.jabatan||'', Lokasi_Kerja:u.lokasi_kerja||'',
+      Active: u.active === false ? 'Nonaktif' : 'Aktif',
+      Dibuat: u.created_at||''
+    })));
+    addSheet('Ratings',       (ratings||[]).map(r => ({
+      ID:r.id, Request_ID:r.request_id, Kode_Permintaan:r.kode_permintaan||'',
+      Nama_Pemesan:r.nama_pemesan||'',
+      Rating:r.rating, Kritik_Saran:r.kritik_saran||'', Dibuat:r.created_at
+    })));
+    addSheet('Notifications', (notifs||[]).map(n => ({
+      ID:n.id, User_ID:n.user_id, Request_ID:n.request_id,
+      Type:n.type, Title:n.title, Body:n.body, Read_At:n.read_at||'', Created_At:n.created_at
+    })));
+    addSheet('ActivityLogs',  (logs||[]).map(l => ({
+      ID:l.id, Waktu:l.created_at, User_ID:l.user_id||'', Username:l.username||'',
+      Action:l.action, Target_Type:l.target_type||'', Target_ID:l.target_id||'',
+      Detail:l.detail||''
+    })));
+    addSheet('SlaTargets',    (slas||[]).map(s => ({
+      Kategori:s.kategori, Kategori_Kode:s.kategori_kode, Target_Jam:s.target_hours,
+      Deskripsi:s.description||'', Updated_At:s.updated_at||''
+    })));
+    addSheet('MataAnggaran',  (ma||[]).map(m => ({ Nama:m.name, Kode:m.kode||'', Deskripsi:m.description||'' })));
+    addSheet('Divisi',        (divs||[]).map(d => ({ ID:d.id, Nama:d.name })));
+    addSheet('Departemen',    (deps||[]).map(d => {
+      const dv = (divs||[]).find(x => x.id === d.divisi_id);
+      return { ID:d.id, Nama:d.name, Divisi:dv?dv.name:'', Divisi_ID:d.divisi_id };
+    }));
+    addSheet('Lokasi',        (lok||[]).map(o => ({ Nama:o.name })));
+    addSheet('LokasiKerja',   (lk||[]).map(o => ({ Nama:o.name })));
+    addSheet('Tujuan',        (tuj||[]).map(o => ({ Nama:o.name })));
+    addSheet('Version',       (ver||[]).map(v => ({ Versi:v.version, Tanggal:v.release_date, Perubahan:v.changes })));
+
+    const ts = new Date().toISOString().slice(0,10);
+    const fname = `backup-CRM-GA-${ts}.xlsx`;
+    XLSX.writeFile(wb, fname);
+    toast('Backup berhasil diunduh','success');
+    db.logActivity({ action:'backup.download', target_type:'backup', target_id:null,
+      detail:`Backup XLSX di-download (${fname})` });
+  }catch(err){
+    console.error('[backup]', err);
+    toast('Gagal membuat backup: '+(err.message||''),'error');
+  }finally{
+    if(btn){ btn.disabled = false; btn.innerHTML = original; }
+  }
+}
+
 /* Session — persisted in localStorage so closing/reopening tab,
    and bouncing between landing and admin, never logs the user out. */
 const session = {
@@ -1901,11 +2227,41 @@ async function renderLanding(){
 
   // --- Load dropdowns ---
   try{
-    const [lok, tuj] = await Promise.all([db.listLokasi(), db.listTujuan()]);
+    const [lok, tuj, ma, divs, deps] = await Promise.all([
+      db.listLokasi(), db.listTujuan(),
+      db.listMataAnggaran().catch(()=>[]),
+      db.listDivisi().catch(()=>[]),
+      db.listDepartemen().catch(()=>[])
+    ]);
     const selL = $('#select-lokasi');
     if(selL) selL.innerHTML = '<option value="">-- Pilih Lokasi --</option>' + lok.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
     const selT = $('#select-tujuan');
     if(selT) selT.innerHTML = '<option value="">-- Pilih Tujuan --</option>' + tuj.map(x=>`<option>${escapeHtml(x.name)}</option>`).join('');
+
+    // Mata Anggaran
+    const selMA = $('#select-mata-anggaran');
+    if(selMA) selMA.innerHTML = '<option value="">-- Pilih Mata Anggaran --</option>' +
+      ma.map(m => `<option>${escapeHtml(m.name)}${m.kode?' — '+escapeHtml(m.kode):''}</option>`).join('');
+
+    // Divisi → Departemen (cascading)
+    const selDiv = $('#select-divisi');
+    const selDep = $('#select-departemen');
+    if(selDiv){
+      selDiv.innerHTML = '<option value="">-- Pilih Divisi --</option>' +
+        divs.map(d => `<option value="${escapeHtml(d.id)}">${escapeHtml(d.name)}</option>`).join('');
+    }
+    if(selDiv && selDep){
+      selDiv.addEventListener('change', () => {
+        const divId = selDiv.value;
+        if(!divId){
+          selDep.innerHTML = '<option value="">— Pilih Divisi terlebih dahulu —</option>';
+          return;
+        }
+        const opts = deps.filter(d => d.divisi_id === divId);
+        selDep.innerHTML = '<option value="">-- Pilih Departemen --</option>' +
+          opts.map(d => `<option>${escapeHtml(d.name)}</option>`).join('');
+      });
+    }
   }catch(err){ console.error('[dropdowns]', err); }
 
   // --- Tracker (wrapped so failure doesn't break the form below) ---
@@ -1924,7 +2280,7 @@ async function renderLanding(){
           if(!r){
             trackResult.innerHTML = `
               <div class="card-pad" style="background:#FEF2F2;border-radius:10px;border:1px solid #FECACA;color:#991B1B">
-                <strong>Tidak ditemukan.</strong> Periksa kembali kode permintaan Anda.
+                <strong>Tidak ditemukan.</strong> Periksa kembali kode Anda — bisa berupa <em>kode permintaan</em> (mis. FB-120520260001) atau <em>kode SmartOffice</em>.
               </div>`;
             return;
           }
@@ -1932,6 +2288,7 @@ async function renderLanding(){
           const rating = await db.getRatingByRequest(r.id);
           trackResult.innerHTML = `
             <div class="tracker-row"><span class="k">Kode Permintaan</span><span class="v"><span class="code-pill">${escapeHtml(r.kode_permintaan)}</span></span></div>
+            ${r.kode_smartoffice ? `<div class="tracker-row"><span class="k">Kode SmartOffice</span><span class="v">${escapeHtml(r.kode_smartoffice)}</span></div>` : ''}
             <div class="tracker-row"><span class="k">Kategori</span><span class="v">${escapeHtml(r.kategori)}</span></div>
             <div class="tracker-row"><span class="k">Pemesan</span><span class="v">${escapeHtml(r.nama_pemesan)}</span></div>
             <div class="tracker-row"><span class="k">Tanggal Kebutuhan</span><span class="v">${fmtDate(r.tanggal_kebutuhan)}</span></div>
@@ -2024,6 +2381,12 @@ function setupRequestForm(){
       }
 
       const hargaDigits = (fd.get('estimasi_harga')||'').toString().replace(/\D/g,'');
+
+      // Divisi field stores the divisi UUID; resolve to name for storage
+      const divisiId = fd.get('divisi') || '';
+      const divList = await db.listDivisi().catch(() => []);
+      const divObj = divList.find(d => d.id === divisiId);
+
       const payload = {
         kode_permintaan: kode,
         kode_smartoffice: fd.get('kode_smartoffice') || null,
@@ -2034,6 +2397,9 @@ function setupRequestForm(){
         nama_kegiatan: fd.get('nama_kegiatan') || null,
         lokasi_kebutuhan: fd.get('lokasi_kebutuhan') || null,
         tujuan_kebutuhan: fd.get('tujuan_kebutuhan') || null,
+        divisi:        divObj ? divObj.name : null,
+        departemen:    fd.get('departemen') || null,
+        mata_anggaran: fd.get('mata_anggaran') || null,
         tanggal_kebutuhan: fd.get('tanggal_kebutuhan'),
         detail_kebutuhan: fd.get('detail_kebutuhan'),
         estimasi_harga: hargaDigits ? Number(hargaDigits) : 0,
@@ -2293,6 +2659,16 @@ function relTime(iso){
 /* ----------- ADMIN: DASHBOARD ----------- */
 async function viewAdminDashboard(c){
   c.innerHTML = `
+    <div class="dash-action-bar" style="display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px;flex-wrap:wrap" data-html2canvas-ignore="true">
+      <button class="btn btn-ghost btn-sm" id="dash-screenshot" title="Download tampilan Dashboard sebagai JPG">
+        <span class="material-symbols-rounded" style="font-size:18px">photo_camera</span>Screenshot JPG
+      </button>
+      <button class="btn btn-accent btn-sm" id="dash-backup" title="Download backup seluruh data ke XLSX">
+        <span class="material-symbols-rounded" style="font-size:18px">cloud_download</span>Backup Data
+      </button>
+    </div>
+
+    <div id="dash-capture-host">
     <div class="adm-stat-grid">
       <div class="stat-card"><div class="stat-icon"><span class="material-symbols-rounded">inventory_2</span></div>
         <div class="stat-body"><span class="stat-label">Total Permintaan</span><span class="stat-value" id="ads-total">—</span></div></div>
@@ -2329,13 +2705,19 @@ async function viewAdminDashboard(c){
     <div class="card">
       <div class="card-head">
         <h3>Daftar Permintaan Terbaru</h3>
-        <a href="#/admin/requests" class="btn btn-ghost btn-sm">Lihat semua <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span></a>
+        <a href="#/admin/requests" class="btn btn-ghost btn-sm" data-html2canvas-ignore="true">Lihat semua <span class="material-symbols-rounded" style="font-size:18px">arrow_forward</span></a>
       </div>
       <div class="card-body">
         <div id="ads-table-host"></div>
       </div>
     </div>
+    </div><!-- /#dash-capture-host -->
   `;
+
+  // Wire dashboard action buttons
+  $('#dash-screenshot')?.addEventListener('click', () => captureDashboardJpg());
+  $('#dash-backup')?.addEventListener('click', () => downloadBackupXlsx());
+
   let reqs;
   try{
     reqs = await db.listRequests();
@@ -2510,6 +2892,9 @@ async function viewAdminRequests(c){
         Sumber: r.sumber_pemesanan,
         Nama_Pemesan: r.nama_pemesan,
         Nama_Kegiatan: r.nama_kegiatan||'',
+        Divisi: r.divisi||'',
+        Departemen: r.departemen||'',
+        Mata_Anggaran: r.mata_anggaran||'',
         Lokasi: r.lokasi_kebutuhan||'',
         Tujuan: r.tujuan_kebutuhan||'',
         Tanggal_Kebutuhan: r.tanggal_kebutuhan,
@@ -2767,6 +3152,9 @@ async function openRequestDetail(id){
         <div class="k">Nama Kegiatan</div><div class="v">${escapeHtml(r.nama_kegiatan||'—')}</div>
         <div class="k">Lokasi</div><div class="v">${escapeHtml(r.lokasi_kebutuhan||'—')}</div>
         <div class="k">Tujuan</div><div class="v">${escapeHtml(r.tujuan_kebutuhan||'—')}</div>
+        <div class="k">Divisi</div><div class="v">${escapeHtml(r.divisi||'—')}</div>
+        <div class="k">Departemen</div><div class="v">${escapeHtml(r.departemen||'—')}</div>
+        <div class="k">Mata Anggaran</div><div class="v">${escapeHtml(r.mata_anggaran||'—')}</div>
         <div class="k">Tanggal Kebutuhan</div><div class="v">${fmtDate(r.tanggal_kebutuhan)}</div>
         <div class="k">Detail</div><div class="v">${escapeHtml(r.detail_kebutuhan)}</div>
         <div class="k">Estimasi Harga</div><div class="v">${fmtRupiah(r.estimasi_harga)}</div>
@@ -2797,7 +3185,21 @@ async function openRequestEdit(id){
   if(!r) return;
   const me = session.get();
   const isSuperadmin = me?.role === 'superadmin';
-  const [lok, tuj, picUsers] = await Promise.all([db.listLokasi(), db.listTujuan(), db.listPicUsers()]);
+  const [lok, tuj, picUsers, ma, divs, deps] = await Promise.all([
+    db.listLokasi(), db.listTujuan(), db.listPicUsers(),
+    db.listMataAnggaran(), db.listDivisi(), db.listDepartemen()
+  ]);
+
+  // Resolve the divisi for the existing departemen (if any), so the dropdown starts correct
+  const initialDivisiId = (() => {
+    if(!r.departemen) {
+      // user might have selected divisi without departemen; match by name
+      const d = divs.find(x => x.name === r.divisi);
+      return d ? d.id : '';
+    }
+    const dep = deps.find(d => d.name === r.departemen);
+    return dep ? dep.divisi_id : '';
+  })();
 
   // Pre-format the existing completed_at for display in the optional override input
   const completedLocal = r.completed_at
@@ -2841,6 +3243,27 @@ async function openRequestEdit(id){
               <option value="">(kosong)</option>
               ${tuj.map(o=>`<option ${o.name===r.tujuan_kebutuhan?'selected':''}>${escapeHtml(o.name)}</option>`).join('')}
             </select></div>
+          <div class="field"><label>Divisi</label>
+            <select class="select" name="divisi" id="ed-divisi">
+              <option value="">(kosong)</option>
+              ${divs.map(d => `<option value="${escapeHtml(d.id)}" ${d.name===r.divisi?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
+            </select>
+            <span class="hint">Pilih Divisi dulu, daftar Departemen akan otomatis menyesuaikan.</span>
+          </div>
+          <div class="field"><label>Departemen</label>
+            <select class="select" name="departemen" id="ed-departemen">
+              <option value="">(kosong)</option>
+              ${deps.filter(d => d.divisi_id === initialDivisiId).map(d => `<option ${d.name===r.departemen?'selected':''}>${escapeHtml(d.name)}</option>`).join('')}
+            </select>
+            <span class="hint">Daftar tergantung pilihan Divisi di atas.</span>
+          </div>
+          <div class="field"><label>Mata Anggaran</label>
+            <select class="select" name="mata_anggaran">
+              <option value="">(kosong)</option>
+              ${ma.map(m => `<option ${m.name===r.mata_anggaran?'selected':''}>${escapeHtml(m.name)}${m.kode?' — '+escapeHtml(m.kode):''}</option>`).join('')}
+            </select>
+            <span class="hint">Daftar Mata Anggaran dikelola di menu Master Data.</span>
+          </div>
           <div class="field full"><label>Detail Kebutuhan</label>
             <textarea class="textarea" name="detail_kebutuhan">${escapeHtml(r.detail_kebutuhan||'')}</textarea></div>
         </div>
@@ -2925,6 +3348,16 @@ async function openRequestEdit(id){
   statusSel.addEventListener('change', toggleEvidence);
   toggleEvidence();
 
+  // Cascading dropdown: Divisi → Departemen
+  const divisiSel = $('#ed-divisi');
+  const departSel = $('#ed-departemen');
+  divisiSel?.addEventListener('change', () => {
+    const divId = divisiSel.value;
+    const opts = deps.filter(d => d.divisi_id === divId);
+    departSel.innerHTML = '<option value="">(kosong)</option>' +
+      opts.map(d => `<option>${escapeHtml(d.name)}</option>`).join('');
+  });
+
   $('#ed-save').addEventListener('click', async () => {
     const fd = new FormData($('#edit-form'));
     if(!fd.get('keterangan')){ toast('Keterangan wajib diisi','warn'); return; }
@@ -2932,6 +3365,10 @@ async function openRequestEdit(id){
     const pic_user_id = fd.get('pic_user_id') || null;
     const picUser = picUsers.find(u => u.id === pic_user_id);
     const newStatus = fd.get('status');
+
+    // Resolve divisi name from selected id (form holds the divisi UUID)
+    const divisiId = fd.get('divisi') || '';
+    const divObj = divs.find(d => d.id === divisiId);
 
     const patch = {
       kode_smartoffice: fd.get('kode_smartoffice') || null,
@@ -2944,6 +3381,9 @@ async function openRequestEdit(id){
       estimasi_penyelesaian: fd.get('estimasi_penyelesaian') || null,
       lokasi_kebutuhan: fd.get('lokasi_kebutuhan') || null,
       tujuan_kebutuhan: fd.get('tujuan_kebutuhan') || null,
+      divisi:        divObj ? divObj.name : null,
+      departemen:    fd.get('departemen') || null,
+      mata_anggaran: fd.get('mata_anggaran') || null,
       detail_kebutuhan: fd.get('detail_kebutuhan') || null
     };
 
@@ -3232,9 +3672,67 @@ async function viewAdminMaster(c){
         </div>
       </div>
     </div>
+
+    <div class="split-3" style="margin-top:14px">
+      <div class="card">
+        <div class="card-head"><h3>Mata Anggaran</h3></div>
+        <div class="card-body">
+          <p class="muted text-sm" style="margin:0 0 10px">Daftar mata anggaran (budget line items) untuk klasifikasi pengeluaran.</p>
+          <div class="form-grid" style="gap:6px;margin-bottom:8px">
+            <div class="field full" style="margin:0">
+              <input class="input" id="new-ma-name" placeholder="Nama (mis. Operasional Harian)"/>
+            </div>
+            <div class="field" style="margin:0">
+              <input class="input" id="new-ma-kode" placeholder="Kode (opsional)"/>
+            </div>
+            <div class="field" style="margin:0">
+              <button class="btn btn-primary" id="add-ma" style="width:100%"><span class="material-symbols-rounded">add</span>Tambah</button>
+            </div>
+          </div>
+          <div id="list-ma"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Divisi</h3></div>
+        <div class="card-body">
+          <p class="muted text-sm" style="margin:0 0 10px">Unit organisasi tingkat atas (mis. Direktorat). Departemen di bawahnya.</p>
+          <div class="flex gap-2 mb-3">
+            <input class="input" id="new-div" placeholder="Tambah Divisi baru..." style="flex:1"/>
+            <button class="btn btn-primary" id="add-div" title="Tambah"><span class="material-symbols-rounded">add</span></button>
+          </div>
+          <div id="list-div"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-head"><h3>Departemen</h3></div>
+        <div class="card-body">
+          <p class="muted text-sm" style="margin:0 0 10px">Pilih Divisi induk dulu, lalu tambah Departemen.</p>
+          <div class="field" style="margin-bottom:8px">
+            <label class="text-sm" style="font-weight:600">Divisi</label>
+            <select class="select" id="dep-divisi-filter">
+              <option value="">-- Pilih Divisi --</option>
+            </select>
+          </div>
+          <div class="flex gap-2 mb-3">
+            <input class="input" id="new-dep" placeholder="Tambah Departemen..." style="flex:1" disabled/>
+            <button class="btn btn-primary" id="add-dep" title="Tambah" disabled><span class="material-symbols-rounded">add</span></button>
+          </div>
+          <div id="list-dep"></div>
+        </div>
+      </div>
+    </div>
   `;
+
+  // ---- Refresh handlers ----
   async function refresh(){
-    const [lok, lokker, tuj] = await Promise.all([db.listLokasi(), db.listLokasiKerja(), db.listTujuan()]);
+    const [lok, lokker, tuj, ma, divs, deps] = await Promise.all([
+      db.listLokasi(), db.listLokasiKerja(), db.listTujuan(),
+      db.listMataAnggaran(), db.listDivisi(), db.listDepartemen()
+    ]);
+
+    // 3 original simple lists
     const renderList = (items, target, kind) => {
       $(target).innerHTML = items.length ? items.map(o=>`
         <div class="flex between items-center" style="padding:10px 0;border-bottom:1px solid var(--border-2)">
@@ -3258,8 +3756,93 @@ async function viewAdminMaster(c){
     renderList(lok,    '#list-lok',    'lok');
     renderList(lokker, '#list-lokker', 'lokker');
     renderList(tuj,    '#list-tuj',    'tuj');
+
+    // ---- Mata Anggaran (with kode) ----
+    $('#list-ma').innerHTML = ma.length ? ma.map(o => `
+      <div class="flex between items-center" style="padding:10px 0;border-bottom:1px solid var(--border-2);gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${escapeHtml(o.name)}</div>
+          ${o.kode ? `<div class="text-sm muted">${escapeHtml(o.kode)}</div>` : ''}
+        </div>
+        <button class="btn-icon" data-ma-del="${o.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
+      </div>
+    `).join('') : '<div class="muted text-sm">Belum ada data</div>';
+    $$('button[data-ma-del]').forEach(b => b.addEventListener('click', async () => {
+      if(!confirm('Hapus mata anggaran ini?')) return;
+      const id = b.dataset.maDel; const item = ma.find(x => x.id === id);
+      try{
+        await db.deleteMataAnggaran(id);
+        db.logActivity({ action:'masterdata.delete', target_type:'mata_anggaran', target_id:id, detail:`Hapus mata anggaran: ${item?.name||id}` });
+        toast('Dihapus','success'); refresh();
+      }catch(err){ toast('Gagal menghapus','error'); }
+    }));
+
+    // ---- Divisi ----
+    $('#list-div').innerHTML = divs.length ? divs.map(o => {
+      const childCount = deps.filter(d => d.divisi_id === o.id).length;
+      return `
+      <div class="flex between items-center" style="padding:10px 0;border-bottom:1px solid var(--border-2);gap:8px">
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600">${escapeHtml(o.name)}</div>
+          <div class="text-sm muted">${childCount} departemen</div>
+        </div>
+        <button class="btn-icon" data-div-del="${o.id}" title="Hapus (akan hapus semua departemen di bawahnya)"><span class="material-symbols-rounded">delete</span></button>
+      </div>`;
+    }).join('') : '<div class="muted text-sm">Belum ada data</div>';
+    $$('button[data-div-del]').forEach(b => b.addEventListener('click', async () => {
+      const id = b.dataset.divDel;
+      const item = divs.find(x => x.id === id);
+      const childCount = deps.filter(d => d.divisi_id === id).length;
+      const msg = childCount > 0
+        ? `Hapus Divisi "${item?.name}" beserta ${childCount} departemen di bawahnya?`
+        : `Hapus Divisi "${item?.name}"?`;
+      if(!confirm(msg)) return;
+      try{
+        await db.deleteDivisi(id);
+        db.logActivity({ action:'masterdata.delete', target_type:'divisi', target_id:id, detail:`Hapus divisi: ${item?.name||id}${childCount>0?` (+${childCount} departemen)`:''}` });
+        toast('Divisi dihapus','success'); refresh();
+      }catch(err){ toast('Gagal menghapus','error'); }
+    }));
+
+    // ---- Departemen (filter by divisi) ----
+    const divSel = $('#dep-divisi-filter');
+    const prevDivVal = divSel.value;     // preserve selection across refresh
+    divSel.innerHTML = '<option value="">-- Pilih Divisi --</option>' +
+      divs.map(d => `<option value="${escapeHtml(d.id)}" ${d.id===prevDivVal?'selected':''}>${escapeHtml(d.name)}</option>`).join('');
+    const renderDep = () => {
+      const divId = divSel.value;
+      const newDepInput = $('#new-dep');
+      const addDepBtn   = $('#add-dep');
+      if(!divId){
+        $('#list-dep').innerHTML = '<div class="muted text-sm">Pilih Divisi dulu untuk melihat & menambah Departemen.</div>';
+        newDepInput.disabled = true; addDepBtn.disabled = true;
+        return;
+      }
+      newDepInput.disabled = false; addDepBtn.disabled = false;
+      const filtered = deps.filter(d => d.divisi_id === divId);
+      $('#list-dep').innerHTML = filtered.length ? filtered.map(o => `
+        <div class="flex between items-center" style="padding:10px 0;border-bottom:1px solid var(--border-2)">
+          <span>${escapeHtml(o.name)}</span>
+          <button class="btn-icon" data-dep-del="${o.id}" title="Hapus"><span class="material-symbols-rounded">delete</span></button>
+        </div>
+      `).join('') : '<div class="muted text-sm">Belum ada departemen di divisi ini.</div>';
+      $$('button[data-dep-del]').forEach(b => b.addEventListener('click', async () => {
+        if(!confirm('Hapus departemen ini?')) return;
+        const id = b.dataset.depDel;
+        const item = deps.find(x => x.id === id);
+        try{
+          await db.deleteDepartemen(id);
+          db.logActivity({ action:'masterdata.delete', target_type:'departemen', target_id:id, detail:`Hapus departemen: ${item?.name||id}` });
+          toast('Dihapus','success'); refresh();
+        }catch(err){ toast('Gagal menghapus','error'); }
+      }));
+    };
+    divSel.onchange = renderDep;
+    renderDep();
   }
   await refresh();
+
+  // ---- Add handlers ----
   $('#add-lok').addEventListener('click', async () => {
     const v = $('#new-lok').value.trim(); if(!v) return;
     try{
@@ -3282,6 +3865,39 @@ async function viewAdminMaster(c){
       await db.addTujuan(v);
       db.logActivity({ action:'masterdata.create', target_type:'tuj', detail:'Tambah tujuan kebutuhan: '+v });
       $('#new-tuj').value=''; toast('Tujuan ditambahkan','success'); refresh();
+    }catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
+  });
+
+  $('#add-ma').addEventListener('click', async () => {
+    const name = $('#new-ma-name').value.trim();
+    const kode = $('#new-ma-kode').value.trim();
+    if(!name){ toast('Nama mata anggaran wajib diisi','warn'); return; }
+    try{
+      await db.addMataAnggaran({ name, kode:kode||null });
+      db.logActivity({ action:'masterdata.create', target_type:'mata_anggaran', detail:`Tambah mata anggaran: ${name}${kode?' ('+kode+')':''}` });
+      $('#new-ma-name').value=''; $('#new-ma-kode').value='';
+      toast('Mata anggaran ditambahkan','success'); refresh();
+    }catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
+  });
+
+  $('#add-div').addEventListener('click', async () => {
+    const v = $('#new-div').value.trim(); if(!v) return;
+    try{
+      await db.addDivisi({ name:v });
+      db.logActivity({ action:'masterdata.create', target_type:'divisi', detail:'Tambah divisi: '+v });
+      $('#new-div').value=''; toast('Divisi ditambahkan','success'); refresh();
+    }catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
+  });
+
+  $('#add-dep').addEventListener('click', async () => {
+    const v = $('#new-dep').value.trim();
+    const divId = $('#dep-divisi-filter').value;
+    if(!divId){ toast('Pilih Divisi dulu','warn'); return; }
+    if(!v){ toast('Nama departemen wajib diisi','warn'); return; }
+    try{
+      await db.addDepartemen({ name:v, divisi_id:divId });
+      db.logActivity({ action:'masterdata.create', target_type:'departemen', detail:'Tambah departemen: '+v });
+      $('#new-dep').value=''; toast('Departemen ditambahkan','success'); refresh();
     }catch(err){ toast('Gagal menambah: '+(err.message||''),'error'); }
   });
 }
