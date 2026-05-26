@@ -5234,7 +5234,9 @@ function openMassUploadModal(){
     {key:'tujuan_kebutuhan', label:'Tujuan Kebutuhan', required:false},
     {key:'tanggal_kebutuhan',label:'Tanggal Kebutuhan',required:true,  type:'date'},
     {key:'detail_kebutuhan', label:'Detail Kebutuhan', required:true},
-    {key:'estimasi_harga',   label:'Estimasi Harga',   required:false, type:'number'}
+    {key:'estimasi_harga',   label:'Estimasi Harga',   required:false, type:'number'},
+    {key:'divisi',           label:'Divisi',           required:false},
+    {key:'departemen',       label:'Departemen',       required:false}
   ];
 
   const renderModal = (step) => {
@@ -5266,6 +5268,7 @@ function openMassUploadModal(){
             <li><strong>Kategori</strong> harus sama persis dengan salah satu: <em>Food and Beverage, Direct Purchase, Fasilitas Kantor dan Identitas Karyawan, Seragam, Office Supply, Event Support</em>.</li>
             <li><strong>Tanggal Kebutuhan</strong> format <code>YYYY-MM-DD</code> (mis. <code>2026-05-20</code>).</li>
             <li><strong>Estimasi Harga</strong> berupa angka tanpa titik/koma (mis. <code>1500000</code>).</li>
+            <li><strong>Divisi</strong> & <strong>Departemen</strong> opsional. Jika belum terdaftar, sistem <strong>otomatis menambahkannya ke master</strong> dan langsung muncul di dropdown. Bila mengisi Departemen, kolom Divisi wajib diisi juga.</li>
             <li>Kode permintaan akan <strong>otomatis</strong> dibuat berdasarkan kategori; jangan diisi.</li>
             <li>Encoding CSV sebaiknya <strong>UTF-8</strong>.</li>
           </ol>
@@ -5330,9 +5333,28 @@ function openMassUploadModal(){
     }
   }
 
-  // CSV parser — supports quoted fields & escaped quotes
+  // Detect the column delimiter from the header line. Excel on an
+  // Indonesian/European Windows locale saves CSV with ';' (and Google
+  // Sheets export can use a tab), which previously made every column
+  // look "missing" because the parser only knew about ','.
+  function detectDelimiter(text){
+    const firstLine = (text.split('\n')[0] || '');
+    const counts = { ',':0, ';':0, '\t':0 };
+    let inQ = false;
+    for(const ch of firstLine){
+      if(ch === '"'){ inQ = !inQ; continue; }
+      if(inQ) continue;
+      if(ch in counts) counts[ch]++;
+    }
+    let best = ',', bestN = counts[','];
+    for(const d of [';','\t']){ if(counts[d] > bestN){ best = d; bestN = counts[d]; } }
+    return best;
+  }
+
+  // CSV parser — supports quoted fields, escaped quotes, and ','/';'/tab delimiters
   function parseCSV(text){
     text = text.replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n');
+    const DELIM = detectDelimiter(text);
     const rows = []; let cur = []; let field = ''; let inQ = false;
     for(let i=0; i<text.length; i++){
       const ch = text[i];
@@ -5342,7 +5364,7 @@ function openMassUploadModal(){
         else field += ch;
       } else {
         if(ch === '"'){ inQ = true; }
-        else if(ch === ','){ cur.push(field); field = ''; }
+        else if(ch === DELIM){ cur.push(field); field = ''; }
         else if(ch === '\n'){ cur.push(field); rows.push(cur); cur = []; field = ''; }
         else field += ch;
       }
@@ -5361,7 +5383,14 @@ function openMassUploadModal(){
       try{
         const rows = parseCSV(reader.result);
         if(rows.length < 2){ toast('CSV kosong atau tanpa header','warn'); return; }
-        const header = rows[0].map(h => h.trim());
+        // Normalize header cells: collapse non-breaking spaces / extra
+        // whitespace and compare case-insensitively, then snap each cell
+        // back to its canonical column label so downstream lookups work.
+        const norm = s => (s||'').replace(/\u00A0/g,' ').replace(/\s+/g,' ').trim().toLowerCase();
+        const header = rows[0].map(h => {
+          const col = COLS.find(c => norm(c.label) === norm(h));
+          return col ? col.label : (h||'').trim();
+        });
         // Validate header presence
         const missingCols = COLS.filter(c => c.required && !header.includes(c.label));
         if(missingCols.length){
@@ -5409,6 +5438,10 @@ function openMassUploadModal(){
     const harga = get('Estimasi Harga');
     if(harga && !/^\d+$/.test(harga.replace(/[.,\s]/g,''))) errors.push('Estimasi Harga harus angka');
 
+    const divisi = get('Divisi');
+    const departemen = get('Departemen');
+    if(departemen && !divisi) errors.push('Departemen diisi tetapi Divisi kosong');
+
     const payload = errors.length ? null : {
       kategori,
       kategori_kode: KATEGORI_KODE[kategori],
@@ -5421,12 +5454,14 @@ function openMassUploadModal(){
       tanggal_kebutuhan: tgl,
       detail_kebutuhan: detail,
       estimasi_harga: harga ? Number(harga.replace(/[.,\s]/g,'')) : 0,
+      divisi: divisi || null,
+      departemen: departemen || null,
       status: 'Belum Dikonfirmasi'
     };
     return { line: lineNum, raw: obj, errors, payload };
   }
 
-  function renderPreview(){
+  async function renderPreview(){
     const host = $('#mu-preview-host');
     const valid = parsedRows.filter(p => p.errors.length === 0).length;
     const invalid = parsedRows.length - valid;
@@ -5451,7 +5486,7 @@ function openMassUploadModal(){
           <thead><tr>
             <th style="width:46px">Baris</th>
             <th style="width:64px">Status</th>
-            <th>Kategori</th><th>Pemesan</th><th>Tgl Kebutuhan</th><th>Detail</th><th>Catatan</th>
+            <th>Kategori</th><th>Pemesan</th><th>Divisi</th><th>Departemen</th><th>Tgl Kebutuhan</th><th>Detail</th><th>Catatan</th>
           </tr></thead>
           <tbody>
             ${parsedRows.map(p => `
@@ -5462,6 +5497,8 @@ function openMassUploadModal(){
                   : '<span class="badge status-selesai">OK</span>'}</td>
                 <td>${escapeHtml(p.raw['Kategori']||'')}</td>
                 <td>${escapeHtml(p.raw['Nama Pemesan']||'')}</td>
+                <td>${escapeHtml(p.raw['Divisi']||'')||'<span class="muted">—</span>'}</td>
+                <td>${escapeHtml(p.raw['Departemen']||'')||'<span class="muted">—</span>'}</td>
                 <td>${escapeHtml(p.raw['Tanggal Kebutuhan']||'')}</td>
                 <td style="max-width:240px"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${escapeHtml(p.raw['Detail Kebutuhan']||'')}">${escapeHtml(p.raw['Detail Kebutuhan']||'')}</div></td>
                 <td>${p.errors.length ? `<span class="err">${escapeHtml(p.errors.join(' · '))}</span>` : '<span class="muted text-sm">—</span>'}</td>
@@ -5472,11 +5509,121 @@ function openMassUploadModal(){
       </div>
       ${invalid ? `<p class="muted text-sm mt-3">⚠️ ${invalid} baris tidak valid akan diabaikan. Perbaiki file CSV dan upload ulang bila ingin memasukkan semuanya.</p>` : ''}
     `;
+
+    // Highlight Divisi / Departemen that will be auto-created on submit
+    try{
+      const lc = s => (s||'').trim().toLowerCase();
+      const [divList, depList] = await Promise.all([
+        db.listDivisi().catch(()=>[]), db.listDepartemen().catch(()=>[])
+      ]);
+      const newDiv = [], newDep = [];
+      validRows.forEach(r => {
+        const dv = (r.divisi||'').trim();
+        if(dv && !divList.some(d=>lc(d.name)===lc(dv)) && !newDiv.some(x=>lc(x)===lc(dv)))
+          newDiv.push(dv);
+      });
+      validRows.forEach(r => {
+        const dp = (r.departemen||'').trim(), dv = (r.divisi||'').trim();
+        if(!dp || !dv) return;
+        const key = lc(dp)+'|'+lc(dv);
+        if(newDep.some(x => lc(x.dep)+'|'+lc(x.div) === key)) return;
+        const divObj = divList.find(d=>lc(d.name)===lc(dv));
+        const exists = divObj && depList.some(d=>d.divisi_id===divObj.id && lc(d.name)===lc(dp));
+        if(!exists) newDep.push({dep:dp, div:dv});
+      });
+      if(newDiv.length || newDep.length){
+        const banner = document.createElement('div');
+        banner.className = 'card card-pad mt-3';
+        banner.style.cssText = 'background:var(--mrt-blue-soft);border:1px solid var(--mrt-blue-soft);border-radius:12px';
+        banner.innerHTML = `
+          <strong style="font-size:13.5px"><span class="material-symbols-rounded" style="font-size:18px;vertical-align:-3px;color:var(--mrt-blue)">auto_awesome</span> Master baru akan dibuat otomatis saat submit</strong>
+          <div class="muted text-sm" style="margin-top:6px;line-height:1.7">
+            ${newDiv.length?`<div><strong>Divisi (${newDiv.length}):</strong> ${newDiv.map(escapeHtml).join(', ')}</div>`:''}
+            ${newDep.length?`<div><strong>Departemen (${newDep.length}):</strong> ${newDep.map(x=>escapeHtml(x.dep)+' <span class="muted">— '+escapeHtml(x.div)+'</span>').join(', ')}</div>`:''}
+          </div>`;
+        host.appendChild(banner);
+      }
+    }catch(err){ console.warn('preview master check gagal', err); }
+  }
+
+  // Ensure every Divisi / Departemen named in the upload exists in the
+  // master tables. Missing ones are created on the fly so they appear in
+  // the dropdowns; request rows are then normalized to the master's
+  // canonical spelling (so filters & dropdowns match exactly).
+  async function ensureMasters(msg){
+    const lc = s => (s||'').trim().toLowerCase();
+    if(msg) msg.textContent = 'Memeriksa master Divisi & Departemen...';
+    let divList = await db.listDivisi().catch(()=>[]);
+    let depList = await db.listDepartemen().catch(()=>[]);
+    let createdDiv = 0, createdDep = 0;
+
+    // 1) Divisi — unique names referenced in the file (case-insensitive)
+    const wantDiv = [];
+    validRows.forEach(r => {
+      const n = (r.divisi||'').trim();
+      if(n && !wantDiv.some(x => lc(x) === lc(n))) wantDiv.push(n);
+    });
+    for(const name of wantDiv){
+      if(divList.some(d => lc(d.name) === lc(name))) continue;
+      try{
+        const row = await db.addDivisi({ name });
+        if(row) divList.push(row);
+        createdDiv++;
+      }catch(err){
+        // Likely created concurrently — refetch the list and carry on
+        console.warn('addDivisi gagal:', name, err);
+        divList = await db.listDivisi().catch(()=>divList);
+      }
+    }
+
+    // 2) Departemen — needs a parent Divisi (ensured in step 1 above)
+    const wantDep = [];
+    validRows.forEach(r => {
+      const dep = (r.departemen||'').trim();
+      const div = (r.divisi||'').trim();
+      if(dep && div && !wantDep.some(x => lc(x.dep)===lc(dep) && lc(x.div)===lc(div)))
+        wantDep.push({ dep, div });
+    });
+    for(const {dep, div} of wantDep){
+      const divObj = divList.find(d => lc(d.name) === lc(div));
+      if(!divObj) continue;
+      if(depList.some(d => d.divisi_id === divObj.id && lc(d.name) === lc(dep))) continue;
+      try{
+        const row = await db.addDepartemen({ name:dep, divisi_id:divObj.id });
+        if(row) depList.push(row);
+        createdDep++;
+      }catch(err){
+        console.warn('addDepartemen gagal:', dep, err);
+        depList = await db.listDepartemen().catch(()=>depList);
+      }
+    }
+
+    // 3) Normalize each request row to the master's canonical spelling
+    validRows.forEach(r => {
+      if(r.divisi){
+        const d = divList.find(x => lc(x.name) === lc(r.divisi));
+        if(d) r.divisi = d.name;
+      }
+      if(r.departemen && r.divisi){
+        const d = divList.find(x => lc(x.name) === lc(r.divisi));
+        const dep = d && depList.find(x => x.divisi_id === d.id && lc(x.name) === lc(r.departemen));
+        if(dep) r.departemen = dep.name;
+      }
+    });
+
+    return { createdDiv, createdDep };
   }
 
   async function doSubmit(){
     setStep(3);
     const msg = $('#mu-progress-msg');
+    // Auto-create any Divisi / Departemen referenced in the file that
+    // don't exist in the master tables yet, so they show up in dropdowns.
+    let createdDiv = 0, createdDep = 0;
+    try{
+      const res = await ensureMasters(msg);
+      createdDiv = res.createdDiv; createdDep = res.createdDep;
+    }catch(err){ console.warn('ensureMasters gagal', err); }
     let inserted = 0; let failed = 0;
     for(let i = 0; i < validRows.length; i++){
       const payload = validRows[i];
@@ -5495,11 +5642,15 @@ function openMassUploadModal(){
       const host = $('#req-table-host'); if(host) renderRequestsTable(host, _adminReqsCache, {compact:false});
     }catch{}
 
+    const masterNote = (createdDiv || createdDep)
+      ? `<p class="muted text-sm">Master baru otomatis dibuat: <strong style="color:var(--mrt-blue)">${createdDiv}</strong> Divisi · <strong style="color:var(--mrt-blue)">${createdDep}</strong> Departemen.</p>`
+      : '';
     $('#modal-content .modal-body').innerHTML = `
       <div class="center">
         <div class="success-mark"><span class="material-symbols-rounded">check</span></div>
         <h3 style="margin:0 0 6px">Selesai!</h3>
         <p class="muted">Berhasil menyimpan <strong style="color:var(--mrt-green)">${inserted}</strong> permintaan${failed?` · gagal <strong style="color:var(--danger)">${failed}</strong>`:''}.</p>
+        ${masterNote}
       </div>
     `;
     $('#mu-foot').innerHTML = `<button class="btn btn-primary" onclick="closeModal()">Tutup</button>`;
@@ -5514,13 +5665,15 @@ function openMassUploadModal(){
     const sample1 = [
       'Food and Beverage','SO-FB-2026-0099','WhatsApp','Ahmad Rifai',
       'Rapat Mingguan','Lantai 5 - Meeting Room A','Rapat Internal',
-      exampleDate,'Snack box 15 pax + air mineral','1200000'
-    ].map(v => /[",]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',');
+      exampleDate,'Snack box 15 pax + air mineral','1200000',
+      'Direktorat Operasi & Pemeliharaan','Operasi Stasiun'
+    ].map(v => /[",;\t]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',');
     const sample2 = [
       'Office Supply','','SmartOffice','Lina Marlina',
       '','Lantai 10 - Open Space','Operasional Harian',
-      exampleDate,'Tinta printer Epson L120, 4 botol warna','450000'
-    ].map(v => /[",]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',');
+      exampleDate,'Tinta printer Epson L120, 4 botol warna','450000',
+      'Internal Audit','Anti Fraud'
+    ].map(v => /[",;\t]/.test(v)?`"${v.replace(/"/g,'""')}"`:v).join(',');
     const csv = '\ufeff' + [header, sample1, sample2].join('\n');
     const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
